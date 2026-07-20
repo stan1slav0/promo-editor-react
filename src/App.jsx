@@ -7,8 +7,8 @@ import { getProcessor } from './processors'
 const PAGES = [
   { id: 'finance', title: 'Finance', categories: ['Finance', 'Health', 'Pets'] },
   { id: 'alpha', title: 'Alpha', categories: ['Alpha'] },
-  { id: 'organic', title: 'Organic', categories: ['Organic'] },
-  { id: 'redeagle', title: 'Redeagle', categories: ['Redeagle'] },
+  { id: 'organic', title: 'Terra', categories: ['Terra'] },
+  // { id: 'redeagle', title: 'Redeagle', categories: ['Redeagle'] },
 ]
 
 export default function App() {

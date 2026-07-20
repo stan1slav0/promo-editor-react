@@ -55,12 +55,12 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
       parentParam = 'alpha'
       const formattedName = `${letters}/lift-${digits}`
       apiPath = `promo/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://storage.epcnetwork.dev/browser/alphaone/promo/${letters}/lift-${digits}/`
-    } else if (currentCat === 'organic') {
+      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/alphaone/promo/${letters}/lift-${digits}/`
+    } else if (currentCat === 'terra') {
       parentParam = 'organic'
       const formattedName = `${letters}/creative-${digits}`
       apiPath = `creatives/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://storage.epcnetwork.dev/browser/organic/creatives/${letters}/creative-${digits}/`
+      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/organic/creatives/${letters}/creative-${digits}/`
     } else {
       parentParam = 'global'
       const formattedName = `${letters}/lift-${digits}`
@@ -69,7 +69,7 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
         : (typeof activeCategoryBtn === 'string' ? activeCategoryBtn : 'finance')
 
       apiPath = `Promo/${originCategoryName}/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://storage.epcnetwork.dev/browser/files/Promo/${encodeURIComponent(originCategoryName)}/${letters}/lift-${digits}/`
+      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/files/Promo/${encodeURIComponent(originCategoryName)}/${letters}/lift-${digits}/`
     }
 
     const originalApiUrl = `https://public.epcnetwork.dev/upload?parent=${parentParam}&path=${apiPath}`

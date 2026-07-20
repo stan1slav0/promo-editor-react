@@ -52,16 +52,13 @@ input[type=number] {
   background: linear-gradient(108deg, #030C27 0%, #031030 50%, #500A3F 100%);
   min-height: 100%;
 }
-
 .main-wrapper ::-webkit-scrollbar {
   width: 10px;
 }
-
 .main-wrapper ::-webkit-scrollbar-track {
   background-color: transparent;
   border-radius: 6px;
 }
-
 .main-wrapper ::-webkit-scrollbar-thumb {
   border-radius: 6px;
   background: #6BF8F9 padding-box;
@@ -95,9 +92,7 @@ input[type=number] {
   background-color: rgba(255, 249, 247, 0.2);
   backdrop-filter: blur(15px);
 }
-
-.input-number:focus,
-.input-number:active {
+.input-number:focus, .input-number:active {
   outline: 0;
   border: 3px solid #0092FF;
   box-shadow: 0 0 10px #0092FF;
@@ -106,7 +101,6 @@ input[type=number] {
 .field {
   position: relative;
 }
-
 .field:before {
   content: "";
   position: absolute;
@@ -119,7 +113,6 @@ input[type=number] {
   border-radius: 6px 0 0 6px;
   z-index: 1;
 }
-
 .field:after {
   content: "";
   position: absolute;
@@ -132,7 +125,6 @@ input[type=number] {
   border-radius: 0 6px 6px 0;
   z-index: 1;
 }
-
 .field__line {
   position: absolute;
   left: 0;
@@ -141,7 +133,6 @@ input[type=number] {
   height: 100%;
   pointer-events: none;
 }
-
 .field__line:before {
   content: "";
   position: absolute;
@@ -152,7 +143,6 @@ input[type=number] {
   background: linear-gradient(to left, #DE46D4, #6BF8F9);
   z-index: 1;
 }
-
 .field__line:after {
   content: "";
   position: absolute;
@@ -163,7 +153,6 @@ input[type=number] {
   background: linear-gradient(to left, #DE46D4, #6BF8F9);
   z-index: 1;
 }
-
 .field__area {
   border: 3px solid transparent;
   background: rgba(0, 0, 0, 0.2);
@@ -178,14 +167,11 @@ input[type=number] {
   display: block;
   overflow-y: auto;
 }
-
 .field__area:hover {
   outline: 0;
   box-shadow: inset 0 0 5px #DE46D4, 0 0 8px #6BF8F9;
 }
-
-.field__area:focus,
-.field__area:active {
+.field__area:focus, .field__area:active {
   outline: 0;
   box-shadow: inset 0 0 2px #DE46D4, 0 0 5px #6BF8F9;
 }
@@ -196,7 +182,6 @@ input[type=number] {
   display: flex;
   flex-direction: column;
 }
-
 .field-big:before {
   content: "";
   position: absolute;
@@ -209,7 +194,6 @@ input[type=number] {
   border-radius: 16px 0 0 16px;
   z-index: 1;
 }
-
 .field-big:after {
   content: "";
   position: absolute;
@@ -222,7 +206,6 @@ input[type=number] {
   border-radius: 0 16px 16px 0;
   z-index: 1;
 }
-
 .field-big__line {
   position: absolute;
   left: 0;
@@ -231,7 +214,6 @@ input[type=number] {
   height: 100%;
   pointer-events: none;
 }
-
 .field-big__line:before {
   content: "";
   position: absolute;
@@ -242,7 +224,6 @@ input[type=number] {
   background: linear-gradient(to left, #DE46D4, #6BF8F9);
   z-index: 1;
 }
-
 .field-big__line:after {
   content: "";
   position: absolute;
@@ -253,7 +234,6 @@ input[type=number] {
   background: linear-gradient(to left, #DE46D4, #6BF8F9);
   z-index: 1;
 }
-
 .field-big__area {
   border: 3px solid transparent;
   background: linear-gradient(200deg, rgba(114, 225, 225, 0.05) 0%, rgba(114, 0, 225, 0.05) 100%);
@@ -270,34 +250,26 @@ input[type=number] {
   padding: 17px;
   flex-grow: 1;
 }
-
 .field-big__area * {
   color: #f1f1f1 !important;
   background-color: transparent !important;
 }
-
 .field-big__area:hover {
   outline: 0;
   box-shadow: inset 0 0 8px #DE46D4, 0 0 8px #6BF8F9;
 }
-
-.field-big__area:focus,
-.field-big__area:active {
+.field-big__area:focus, .field-big__area:active {
   outline: 0;
   box-shadow: inset 0 0 4px #DE46D4, 0 0 4px #6BF8F9;
 }
-
 .field-big__area_main {
   box-shadow: inset 0 0 25px #DE46D4, 0 0 25px #6BF8F9;
 }
-
 .field-big__area_main:hover {
   outline: 0;
   box-shadow: inset 0 0 14px #DE46D4, 0 0 14px #6BF8F9;
 }
-
-.field-big__area_main:focus,
-.field-big__area_main:active {
+.field-big__area_main:focus, .field-big__area_main:active {
   box-shadow: inset 0 0 6px #DE46D4, 0 0 6px #6BF8F9;
 }
 
@@ -343,7 +315,6 @@ input[type=number] {
   position: relative;
   padding: 3px;
 }
-
 .input-color-wrapper__field {
   border-radius: 8px;
   overflow: hidden;
@@ -382,7 +353,6 @@ input[type=number] {
   min-height: calc(100vh - 92px - 40px - 48px - 100px);
   position: relative;
 }
-
 .flex-cols_cat::before {
   content: "";
   display: block;
@@ -491,7 +461,6 @@ input[type=number] {
   text-align: left;
   position: relative;
 }
-
 .mini-modal__btn::after {
   content: "";
   position: absolute;
@@ -504,7 +473,6 @@ input[type=number] {
   height: 8px;
   transform: rotate(-45deg);
 }
-
 .mini-modal__btn:hover {
   color: #FFFFFF;
   border: 3px solid #0092FF;
@@ -526,11 +494,9 @@ input[type=number] {
   cursor: pointer;
   transition: background-color 0.5s linear;
 }
-
 .mini-modal__link._active {
   background-color: rgba(0, 146, 255, 0.3);
 }
-
 .mini-modal__link:hover {
   background-color: rgba(0, 146, 255, 0.1);
 }
@@ -543,7 +509,7 @@ input[type=number] {
   left: 0;
   top: 0;
   -o-object-fit: cover;
-  object-fit: cover;
+     object-fit: cover;
   opacity: 0.2;
   mix-blend-mode: overlay;
 }
@@ -573,26 +539,21 @@ input[type=number] {
   color: #6BF8F9;
   cursor: pointer;
 }
-
 .button-number svg {
   display: block;
   width: 16px;
   height: 4px;
   fill: currentColor;
 }
-
 .button-number.button-increment {
   color: #DE46D4;
 }
-
 .button-number.button-increment svg {
   height: 20px;
 }
-
 .button-number:hover svg {
   filter: drop-shadow(0 0 5px #6BF8F9);
 }
-
 .button-number.button-increment:hover svg {
   filter: drop-shadow(0 0 5px #DE46D4);
 }
@@ -618,7 +579,6 @@ input[type=number] {
   border: none;
   background: transparent;
 }
-
 .main-btn::before {
   content: "";
   position: absolute;
@@ -632,7 +592,6 @@ input[type=number] {
   pointer-events: none;
   transition: background-position 0.6s linear, box-shadow 0.3s linear, opacity 0.3s linear;
 }
-
 .main-btn span {
   position: relative;
   z-index: 1;
@@ -640,7 +599,6 @@ input[type=number] {
   display: block;
   padding-right: 36px;
 }
-
 .main-btn svg {
   position: absolute;
   right: 0;
@@ -648,50 +606,40 @@ input[type=number] {
   margin-top: -13px;
   fill: currentColor;
 }
-
 .main-btn:hover::before {
   background-position: 100% 50%;
   box-shadow: 0 0 10px #DE46D4;
 }
-
 .main-btn_icon {
   min-width: 1px;
   padding-left: 10px;
   padding-right: 10px;
 }
-
 .main-btn_icon span {
   padding-right: 26px;
 }
-
-.main-btn_icon+.main-btn_icon {
+.main-btn_icon + .main-btn_icon {
   margin-left: -10px;
 }
-
 .main-btn_marg {
   margin-left: auto;
 }
-
 .main-btn_noicon span {
   padding-right: 0;
 }
-
 .main-btn_noicon {
   min-width: 1px;
   width: 106px;
   transition: width 0.3s linear, color 0.3s linear;
   color: #a1a2a6;
 }
-
 .main-btn_noicon._active {
   width: 140px;
   color: #1f1f1f;
 }
-
 .main-btn_noicon::before {
   opacity: 0.5;
 }
-
 .main-btn._active::before {
   background-position: 100% 50%;
   box-shadow: 0 0 2px #6BF8F9, 0 0 5px #DE46D4;
@@ -705,7 +653,6 @@ input[type=number] {
   padding-left: 8px;
   padding-right: 8px;
 }
-
 .category-wrap._show {
   display: flex;
 }
@@ -733,8 +680,7 @@ input[type=number] {
 /* .switch input:checked+.slider {
   background-color: #fff;
 } */
-
-.switch input:checked+.slider:before {
+.switch input:checked + .slider:before {
   background-color: #d357d8;
 }
 
@@ -750,7 +696,7 @@ input[type=number] {
   border-radius: 50%;
 }
 
-.switch input:checked+.slider:before {
+.switch input:checked + .slider:before {
   transform: translateX(21px);
 }
 
@@ -779,12 +725,10 @@ input[type=number] {
   0% {
     box-shadow: 0 0 2px #6BF8F9, 0 0 5px #DE46D4;
   }
-
   100% {
     box-shadow: 0 0 15px #6BF8F9, 0 0 20px #DE46D4;
   }
 }
-
 .output-glass {
   margin-top: 12px;
   background: rgba(0, 0, 0, 0.35);
@@ -801,16 +745,13 @@ input[type=number] {
   0% {
     box-shadow: 0 0 8px #6BF8F9, 0 0 24px #DE46D4, 0 0 48px #6BF8F9;
   }
-
   50% {
     box-shadow: 0 0 12px #6BF8F9, 0 0 30px #DE46D4, 0 0 60px #6BF8F9;
   }
-
   100% {
     box-shadow: 0 0 8px #6BF8F9, 0 0 24px #DE46D4, 0 0 48px #6BF8F9;
   }
 }
-
 .wewq2 {
   background: linear-gradient(90deg, #DE46D4, #6BF8F9);
   background-size: 200% 200%;
@@ -829,14 +770,10 @@ input[type=number] {
   0% {
     background-position: 0% 50%;
   }
-
   50% {
     background-position: 100% 50%;
   }
-
   100% {
     background-position: 0% 50%;
   }
-}
-
-/*# sourceMappingURL=style.css.map */
+}/*# sourceMappingURL=style.css.map */

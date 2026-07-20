@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+src/css/style.scss
+src/css/mediaqueries.scss

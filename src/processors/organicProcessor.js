@@ -16,7 +16,7 @@ const blueColors = [
 
 class OrganicProcessor {
   constructor() {
-    this.categoryName = 'organic'
+    this.categoryName = 'terra'
     this.hasMJML = false // Отключает MJML кнопки и блоки
   }
 

@@ -6,7 +6,7 @@ export function getProcessor(category) {
   switch (category?.toLowerCase()) {
     case 'alpha':
       return alphaProcessor
-    case 'organic':
+    case 'terra':
       return organicProcessor
     case 'finance':
     case 'health':
