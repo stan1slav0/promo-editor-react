@@ -1,0 +1,30 @@
+{
+  "name": "promo-formatter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "homepage": "https://stan1slav0.github.io/promo-editor-react",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "file-saver": "^2.0.5",
+    "piexifjs": "^1.0.6",
+    "prettier": "^3.9.5",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "gh-pages": "^6.3.0",
+    "oxlint": "^1.71.0",
+    "vite": "^8.1.1"
+  }
+}
