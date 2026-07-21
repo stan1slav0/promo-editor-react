@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Header({
   pages,
@@ -19,25 +20,41 @@ export default function Header({
     >
       {/* 🧭 НАВИГАЦИЯ СТРАНИЦ 🧭 */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        {pages.map((page) => (
-          <button
-            key={page.id}
-            type="button"
-            className={`main-btn main-btn_noicon category-wrap__link  ${currentPage === page.id ? '_active' : ''}`}
-            onClick={() => onPageChange(page.id)}
-            style={{
-              padding: '8px 20px',
-              fontSize: '15px',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            <span>{page.title}</span>
-          </button>
-        ))}
+        {pages.map((page) => {
+          const isActive = currentPage === page.id
+
+          return (
+            <button
+              key={page.id}
+              type="button"
+              className={`main-btn main-btn_noicon category-wrap__link ${isActive ? '_active' : ''}`}
+              onClick={() => onPageChange(page.id)}
+              style={{
+                position: 'relative',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                background: 'transparent',
+              }}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="activeHeaderTab"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 0,
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+
+              <span style={{ position: 'relative', zIndex: 1 }}>{page.title}</span>
+            </button>
+          )
+        })}
       </div>
 
-      {/* ☁️ СЕЛЕКТОР S3 STORAGE MODE ☁️ */}
       <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
           ☁️ S3 Storage Mode (Beta):
@@ -52,9 +69,27 @@ export default function Header({
           />
           <span className="slider" style={{ border: isS3Enabled ? '1px solid #fff' : '1px solid #ccc' }}></span>
         </label>
-        <span id="toggleStatus" style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: '13px', fontWeight: 600, color: isS3Enabled ? '#d357d8' : '#75eaf6', transition: '.3s' }}>
-          {isS3Enabled ? 'Storage Upload' : 'Download to PC'}
-        </span>
+
+        <div style={{ position: 'relative', overflow: 'hidden', height: '20px', display: 'flex', alignItems: 'center' }}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={isS3Enabled ? 'storage' : 'pc'}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                fontFamily: "'Roboto', Arial, sans-serif",
+                fontSize: '13px',
+                fontWeight: 600,
+                color: isS3Enabled ? '#d357d8' : '#75eaf6',
+                display: 'inline-block',
+              }}
+            >
+              {isS3Enabled ? 'Storage Upload' : 'Download to PC'}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   )

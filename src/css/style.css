@@ -376,7 +376,6 @@ input[type=number] {
 .code-blocks-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   flex-grow: 1;
 }
 
@@ -667,6 +666,7 @@ input[type=number] {
   border: 1px dashed #7c3aed;
   width: -moz-fit-content;
   width: fit-content;
+  min-width: 370px;
 }
 
 .slider {

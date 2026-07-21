@@ -76,7 +76,18 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
     const apiUrl = `${PROXY_URL}?url=${encodeURIComponent(originalApiUrl)}`
 
     try {
-      const licenseKey = localStorage.getItem('license_key') || 'none'
+
+      let licenseKey = localStorage.getItem('license_key')
+
+      if (!licenseKey || !licenseKey.trim()) {
+        licenseKey = prompt('🔑 Enter License Key S3:')
+        if (licenseKey && licenseKey.trim()) {
+          localStorage.setItem('license_key', licenseKey.trim())
+        } else {
+          logEl.innerHTML = '❌ No License Key.<br>'
+          return
+        }
+      }
 
       const response = await fetch(apiUrl, {
         method: 'POST',

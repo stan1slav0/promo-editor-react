@@ -1,52 +1,77 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import FormatterCore from './components/FormatterCore'
 import { getProcessor } from './processors'
+import BackgroundCanvas from './components/BackgroundCanvas'
 
 // Конфигурация страниц и их категорий
 const PAGES = [
   { id: 'finance', title: 'Finance', categories: ['Finance', 'Health', 'Pets'] },
   { id: 'alpha', title: 'Alpha', categories: ['Alpha'] },
   { id: 'organic', title: 'Terra', categories: ['Terra'] },
-  // { id: 'redeagle', title: 'Redeagle', categories: ['Redeagle'] },
 ]
 
 export default function App() {
-  // Текущая активная страница
-  const [currentPage, setCurrentPage] = useState('finance')
 
-  // Текущая категория внутри активной страницы
-  const [activeCategory, setActiveCategory] = useState('finance')
+  useEffect(() => {
+    let key = localStorage.getItem('license_key')
 
-  // Глобальное состояние режима S3
+    while (!key || !key.trim()) {
+      key = prompt('🔑 Enter S3 License Key:')
+      if (key && key.trim()) {
+        localStorage.setItem('license_key', key.trim())
+      } else {
+        alert('S3 License Key!')
+      }
+    }
+  }, [])
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    return localStorage.getItem('selectedPage') || 'finance'
+  })
+
+  const [activeCategory, setActiveCategory] = useState(() => {
+    const saved = localStorage.getItem('selectedCategory')
+    return saved ? saved.toLowerCase() : 'finance'
+  })
+
   const [isS3Enabled, setIsS3Enabled] = useState(() => {
     return localStorage.getItem('s3_test_toggle_enabled') === 'true'
   })
 
-  // Находим конфиг текущей страницы
-  const activePageConfig = PAGES.find((p) => p.id === currentPage) || PAGES[0]
+  const handleCategoryChange = (newCategory) => {
+    if (!newCategory) return
+    const lower = newCategory.toLowerCase()
+    setActiveCategory(lower)
+    localStorage.setItem('selectedCategory', lower)
+  }
 
-  // Обработчик переключения страниц верхнего меню
   const handlePageChange = (pageId) => {
     setCurrentPage(pageId)
+    localStorage.setItem('selectedPage', pageId)
+
     const targetConfig = PAGES.find((p) => p.id === pageId)
     if (targetConfig && targetConfig.categories.length > 0) {
-      setActiveCategory(targetConfig.categories[0].toLowerCase())
+      const firstCategory = targetConfig.categories[0].toLowerCase()
+      setActiveCategory(firstCategory)
+      localStorage.setItem('selectedCategory', firstCategory)
     }
   }
 
-  // Обработчик тумблера S3 Mode
   const handleS3ToggleChange = (checked) => {
     setIsS3Enabled(checked)
     localStorage.setItem('s3_test_toggle_enabled', checked)
   }
 
-  // Берем нужный процессор обработки
+  const activePageConfig = PAGES.find((p) => p.id === currentPage) || PAGES[0]
+
   const currentProcessor = getProcessor(activeCategory)
 
   return (
     <div className='main-wrapper'>
-      {/* 🧭 ХЕДЕР С НАВИГАЦИЕЙ И СЕЛЕКТОРОМ S3 🧭 */}
+      <div className="canvas-pattern">
+        <BackgroundCanvas />
+      </div>
       <Header
         pages={PAGES}
         currentPage={currentPage}
@@ -55,11 +80,10 @@ export default function App() {
         onS3ToggleChange={handleS3ToggleChange}
       />
 
-      {/* 📄 ОСНОВНОЕ ЯДРО СТРАНИЦЫ 📄 */}
       <FormatterCore
         processor={currentProcessor}
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={handleCategoryChange}
         availableCategories={activePageConfig.categories}
         isS3Enabled={isS3Enabled}
       />
