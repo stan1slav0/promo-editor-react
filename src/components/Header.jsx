@@ -57,7 +57,7 @@ export default function Header({
 
       <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
-          ☁️ S3 Storage Mode (Beta):
+          ☁️ S3 Storage Mode:
         </span>
         <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', margin: 0 }}>
           <input

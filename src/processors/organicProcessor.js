@@ -430,7 +430,12 @@ class OrganicProcessor {
 
   wrapTextInSpan(htmlContent, promoNameFormatted) {
     let currentIdx = 1
-    htmlContent = htmlContent.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, () => {
+    htmlContent = htmlContent.replace(/<img[^>]*>/gi, (match) => {
+
+      const altMatch = match.match(/alt=["']([^"']*)["']/i)
+      const rawAlt = altMatch && altMatch[1] ? altMatch[1] : 'video'
+      const imageAlt = rawAlt.replace(/"/g, '&quot;').trim()
+
       const dynamicSrc = this.generateDynamicImgSrc(currentIdx++, promoNameFormatted)
       return `      </div>
                        </td>
@@ -438,7 +443,7 @@ class OrganicProcessor {
                    <tr>
                        <td class="image-block" align="center" style="padding-top: 15px; padding-bottom: 15px;">
                            <a href="urlhere" target="_blank">
-                               <img alt="Video preview" height="auto"
+                               <img alt="${imageAlt}" height="auto"
                                    src="${dynamicSrc}"
                                    style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 560px;font-size:13px;"
                                    width="560"/>

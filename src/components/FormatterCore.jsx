@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
 import { uploadImagesToS3 } from '../utils/s3Uploader'
 import { getBlobFromSrc, toJpeg600, injectMetadata } from '../utils/imageProcessor'
+import { generateAltTextsForImages } from '../utils/imageAnalyzer'
 
 const STORAGE_KEY_CATEGORY = 'selectedCategory'
 
@@ -19,6 +20,7 @@ export default function FormatterCore({
   const [mjmlOutput, setMjmlOutput] = useState('')
   const [logText, setLogText] = useState('')
   const [hasImages, setHasImages] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   const editorRef = useRef(null)
   const isFirstRender = useRef(true)
@@ -55,10 +57,7 @@ export default function FormatterCore({
 
     setHasImages(count > 0)
 
-    if (count > 0) {
-      const word = count === 1 ? 'image' : 'images'
-      setLogText(`${count} ${word} ready ✅<br>`)
-    } else {
+    if (count === 0 && !isAnalyzing) {
       setLogText('')
     }
   }
@@ -90,6 +89,11 @@ export default function FormatterCore({
   const handleEditorInput = (e) => {
     setEditorContent(e.currentTarget.innerHTML)
     updateImageCountLog()
+
+    clearTimeout(window.altTimeout)
+    window.altTimeout = setTimeout(() => {
+      analyzeEditorImages()
+    }, 800)
   }
 
   const getFormattedName = () => {
@@ -228,6 +232,47 @@ export default function FormatterCore({
     }
   }
 
+
+  const analyzeEditorImages = async () => {
+    if (!editorRef.current) return
+
+    // 1. Быстрая проверка: есть ли картинки без alt?
+    const imgs = Array.from(editorRef.current.querySelectorAll('img'))
+    const pendingImgs = imgs.filter(img => !img.getAttribute('alt') || img.getAttribute('alt').trim() === '')
+
+    // Если картинок нет — сразу выходим без блокировки и без лишних логов
+    if (pendingImgs.length === 0) return
+
+    // 2. Включаем блокировку и СРАЗУ пишем, что ИИ обрабатывает картинки
+    setIsAnalyzing(true)
+    setLogText(`🤖 AI is analyzing ${pendingImgs.length} image${pendingImgs.length > 1 ? 's' : ''}...`)
+
+    // Даем React миллисекунду на перерисовку заблокированного состояния кнопок
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    try {
+      // 3. Запускаем генерацию ALT
+      await generateAltTextsForImages(pendingImgs, (statusMessage) => {
+        // Опционально: если внутри generateAltTextsForImages передается прогресс
+        setLogText(`🤖 ${statusMessage}`)
+      })
+
+      // Обновляем HTML в редакторе
+      setEditorContent(editorRef.current.innerHTML)
+
+      // 4. Финальное сообщение после успешного завершения
+      const word = pendingImgs.length === 1 ? 'image' : 'images'
+      setLogText(`✅ ${pendingImgs.length} ${word} processed and ready!`)
+
+    } catch (err) {
+      console.error('AI Alt Generation failed:', err)
+      setLogText(`⚠️ AI Alt generation error: ${err.message}`)
+    } finally {
+      // 5. Разблокируем кнопки
+      setIsAnalyzing(false)
+    }
+  }
+
   return (
     <div className="main-wrapper">
       <div className="limit">
@@ -312,9 +357,12 @@ export default function FormatterCore({
 
               <div className="code-buttons-wrapper">
 
-                <button type="button" id="downloadBtn" className="main-btn primary-button" title="Download HTML" onClick={handleFullDownloadHTML}>
+                <button disabled={isAnalyzing} type="button" id="downloadBtn" className="main-btn primary-button" title="Download HTML" onClick={handleFullDownloadHTML} style={{
+                  opacity: isAnalyzing ? 0.6 : 1,
+                  cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                }}>
                   <span>
-                    Download
+                    {isAnalyzing ? 'Analyzing...' : 'Download'}
                     <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4.94 15.86V22.898C4.9496 23.4582 5.40158 23.9103 5.9614 23.9198L5.9795 23.92H16.2538L20.54 19.6338V15.86H22.1V20.28L16.9 25.48H5.9795C4.55803 25.48 3.4033 24.3391 3.38035 22.923L3.38 22.88V15.86H4.94ZM20.228 18.72L15.548 23.4V18.72H20.228ZM19.5005 0C20.922 0 22.0767 1.14087 22.0997 2.55695L22.1 2.59995V3.38H22.88C24.3159 3.38 25.48 4.54406 25.48 5.98V11.7C25.48 13.1359 24.3159 14.3 22.88 14.3H2.6C1.16406 14.3 0 13.1359 0 11.7V5.98C0 4.54406 1.16406 3.38 2.6 3.38H3.38V2.59995C3.38 1.17876 4.52067 0.0233153 5.93651 0.000348427L5.9795 0H19.5005ZM22.88 4.94H2.6C2.03161 4.94 1.56971 5.39597 1.56 5.96209V11.7C1.56 12.2684 2.01597 12.7303 2.58209 12.7398L2.6 12.74H22.88C23.4484 23.74 23.9103 12.284 23.92 11.7179V5.98C23.92 5.41161 23.464 4.94971 22.8979 4.94015L22.88 4.94ZM4.1236 5.98V8.0236H6.5806V5.98H7.696V11.1826H6.5806V8.9986H4.1236V11.1826H3.016V5.98H4.1236ZM12.2876 5.98V6.955H10.7744V11.1826H9.659V6.955H8.138V5.98H12.2876ZM14.2896 5.98L15.5532 9.2248L16.8168 5.98H18.3768V11.1826H17.2614V7.4386L15.795 11.1826H15.3114L13.845 7.4386V11.1826H12.7374V5.98H14.2896ZM20.254 5.98V10.2076H22.4536V11.1826H19.1464V5.98H20.254ZM19.5005 1.56H5.9616C5.40199 1.56961 4.94971 2.02195 4.94 2.58185V2.59995V3.38H20.54V2.58203C20.5303 2.01582 20.0686 1.56 19.5005 1.56Z" />
                     </svg>
@@ -326,7 +374,7 @@ export default function FormatterCore({
                     <motion.button
                       key="mjml-btn"
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      animate={{ opacity: isAnalyzing ? 0.5 : 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
                       type="button"
@@ -334,9 +382,13 @@ export default function FormatterCore({
                       className="main-btn primary-button"
                       title="Download MJML"
                       onClick={exportMJML}
+                      disabled={isAnalyzing}
+                      style={{
+                        cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                      }}
                     >
                       <span>
-                        Download
+                        {isAnalyzing ? 'Analyzing...' : 'Download'}
                         <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
                           <path d="M5.20001 16.12V23.158C5.20961 23.7182 5.66159 24.1703 6.22141 24.1799L6.23951 24.18H16.5138L20.8 19.8938V16.12H22.36V20.54L17.16 25.74H6.23951C4.81804 25.74 3.66331 24.5991 3.64036 23.1831L3.64001 23.1401V16.12H5.20001ZM20.488 18.98L15.808 23.66V18.98H20.488ZM19.7605 0.26001C21.182 0.26001 22.3367 1.40088 22.3597 2.81696L22.36 2.85996V3.64001H23.14C24.5759 3.64001 25.74 4.80407 25.74 6.24001V11.96C25.74 13.3959 24.5759 14.56 23.14 14.56H2.86001C1.42407 14.56 0.26001 13.3959 0.26001 11.96V6.24001C0.26001 4.80407 1.42407 3.64001 2.86001 3.64001H3.64001V2.85996C3.64001 1.43877 4.78068 0.283325 6.19652 0.260358L6.23951 0.26001H19.7605ZM23.14 5.20001H2.86001C2.29162 5.20001 1.82972 5.65598 1.82001 6.2221V11.96C1.82001 12.5284 2.27598 12.9903 2.8421 12.9999L2.86001 13H23.14C23.7084 13 24.1703 12.544 24.18 11.9779V6.24001C24.18 5.67162 23.724 5.20972 23.1579 5.20016L23.14 5.20001ZM19.7605 1.82001H6.22161C5.662 1.82962 5.20972 2.28196 5.20001 2.84186V3.64001H20.8V2.84204C20.7903 2.27583 20.3287 1.82001 19.7605 1.82001Z" />
                           <path d="M3.09247 6.30912H4.41989L5.82188 9.72957H5.88153L7.28352 6.30912H8.61094V11.4H7.5669V8.08646H7.52465L6.20717 11.3752H5.49624L4.17876 8.07403H4.13651V11.4H3.09247V6.30912Z" />
@@ -349,7 +401,10 @@ export default function FormatterCore({
                   )}
                 </AnimatePresence>
 
-                <button type="button" id="btn-download" className="main-btn main-btn_marg main-btn_icon primary-button" title="Download images" onClick={handleDownloadImagesOnly}>
+                <button type="button" id="btn-download" className="main-btn main-btn_marg main-btn_icon primary-button" title="Download images" onClick={handleDownloadImagesOnly} disabled={isAnalyzing} style={{
+                  opacity: isAnalyzing ? 0.6 : 1,
+                  cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                }}>
                   <span>
                     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M23 24H3C2.20435 24 1.44129 23.6839 0.87868 23.1213C0.316071 22.5587 0 21.7956 0 21V5C0 4.20435 0.316071 3.44129 0.87868 2.87868C1.44129 2.31607 2.20435 2 3 2H23C23.7956 2 24.5587 2.31607 25.1213 2.87868C25.6839 3.44129 26 4.20435 26 5V21C26 21.7956 25.6839 22.5587 25.1213 23.1213C24.5587 23.6839 23.7956 24 23 24ZM3 4C2.73478 4 2.48043 4.10536 2.29289 4.29289C2.10536 4.48043 2 4.73478 2 5V21C2 21.2652 2.10536 21.5196 2.29289 21.7071C2.48043 21.8946 2.73478 22 3 22H23C23.2652 22 23.5196 21.8946 23.7071 21.7071C23.8946 21.5196 24 21.2652 24 21V5C24 4.73478 23.8946 4.48043 23.7071 4.29289C23.5196 4.10536 23.2652 4 23 4H3Z" />

@@ -785,13 +785,18 @@ export class FinanceProcessor {
 
   wrapTextInSpan(htmlContent, promoName) {
     let currentImgIdx = 1
-    let processed = htmlContent.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, (match, src) => {
-      // Передаем this.categoryName третьим аргументом
+    let processed = htmlContent.replace(/<img[^>]*>/gi, (match) => {
+
+      const altMatch = match.match(/alt=["']([^"']*)["']/i)
+      const rawAlt = altMatch && altMatch[1] ? altMatch[1] : 'video'
+      const imageAlt = rawAlt.replace(/"/g, '&quot;').trim()
+
       const dynamicSrc = this.generateDynamicImgSrc(currentImgIdx++, promoName, this.categoryName)
+
       return `</span></td></tr>
             <tr><td class="img-bg-block" align="center" style="padding-top: 14px; padding-bottom: 14px;">
                 <a href="urlhere" target="_blank">
-                    <img alt="video" height="auto"
+                    <img alt="${imageAlt}" height="auto"
                                     src="${dynamicSrc}"
                                     style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 560px;font-size:13px;"
                                     width="560"/>
@@ -812,8 +817,12 @@ export class FinanceProcessor {
 
   wrapTextInMjmlTags(htmlContent, promoName) {
     let currentImgIdx = 1
-    htmlContent = htmlContent.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, (match, src) => {
-      // Передаем this.categoryName третьим аргументом
+    htmlContent = htmlContent.replace(/<img[^>]*>/gi, (match) => {
+
+      const altMatch = match.match(/alt=["']([^"']*)["']/i)
+      const rawAlt = altMatch && altMatch[1] ? altMatch[1] : 'video'
+      const imageAlt = rawAlt.replace(/"/g, '&quot;').trim()
+
       const dynamicSrc = this.generateDynamicImgSrc(currentImgIdx++, promoName, this.categoryName)
 
       return `       </div>
@@ -826,7 +835,7 @@ export class FinanceProcessor {
                             <tr>
                               <td style="width:550px;">
                                 <a href="urlhere" target="_blank">
-                                  <img alt="video" src="${dynamicSrc}" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="550" height="auto" />
+                                  <img alt="${imageAlt}" src="${dynamicSrc}" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="550" height="auto" />
                                 </a>
                               </td>
                             </tr>

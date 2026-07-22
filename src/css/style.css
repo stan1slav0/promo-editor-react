@@ -666,7 +666,7 @@ input[type=number] {
   border: 1px dashed #7c3aed;
   width: -moz-fit-content;
   width: fit-content;
-  min-width: 370px;
+  min-width: 320px;
 }
 
 .slider {
