@@ -60,7 +60,6 @@ input[type=number] {
 }
 
 .main-wrapper {
-  background: linear-gradient(108deg, #030C27 0%, #031030 50%, #500A3F 100%);
   min-height: 100%;
 
   ::-webkit-scrollbar {
@@ -79,6 +78,19 @@ input[type=number] {
     background: $neon-blue padding-box;
     border: 3px solid transparent;
   }
+}
+
+.main-wrapper.bg-finance {
+  background: linear-gradient(108deg, #030C27 0%, #031030 50%, #500A3F 100%);
+}
+
+.main-wrapper.bg-alpha {
+
+  background: linear-gradient(108deg, #0e9a90 0%, #0d4d49 50%, #0a4850 100%)
+}
+
+.main-wrapper.bg-organic {
+  background: linear-gradient(108deg, #032703 0%, #063003 50%, #1a500a 100%);
 }
 
 .code-buttons-wrapper {

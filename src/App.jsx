@@ -1,18 +1,51 @@
 import React, { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import FormatterCore from './components/FormatterCore'
 import { getProcessor } from './processors'
 import BackgroundCanvas from './components/BackgroundCanvas'
+import { ProtectedRoute } from './components/ProtectedRoute'
 
 // Конфигурация страниц и их категорий
 const PAGES = [
-  { id: 'finance', title: 'Finance', categories: ['Finance', 'Health', 'Pets'] },
-  { id: 'alpha', title: 'Alpha', categories: ['Alpha'] },
-  { id: 'organic', title: 'Terra', categories: ['Terra'] },
+  { id: 'finance', title: 'Finance', path: '/', categories: ['Finance', 'Health', 'Pets'] },
+  { id: 'alpha', title: 'Alpha', path: '/alpha', categories: ['Alpha'] },
+  { id: 'organic', title: 'Terra', path: '/terra', categories: ['Terra'] },
 ]
 
-export default function App() {
+// Подкомпонент для синхронизации URL и состояния категории/фона
+function PageContent({ pageConfig, activeCategory, onCategoryChange, isS3Enabled }) {
+  const location = useLocation()
 
+  // При смене URL автоматически выставляем соответствующую категорию и класс фона
+  useEffect(() => {
+    if (pageConfig && pageConfig.categories.length > 0) {
+      const defaultCategory = pageConfig.categories[0].toLowerCase()
+      onCategoryChange(defaultCategory)
+    }
+
+    // Динамически меняем класс фона у .main-wrapper
+    const wrapper = document.querySelector('.main-wrapper')
+    if (wrapper) {
+      wrapper.classList.remove('bg-finance', 'bg-alpha', 'bg-terra', 'bg-organic')
+      wrapper.classList.add(`bg-${pageConfig.id}`)
+    }
+  }, [location.pathname, pageConfig])
+
+  const currentProcessor = getProcessor(activeCategory)
+
+  return (
+    <FormatterCore
+      processor={currentProcessor}
+      activeCategory={activeCategory}
+      onCategoryChange={onCategoryChange}
+      availableCategories={pageConfig.categories}
+      isS3Enabled={isS3Enabled}
+    />
+  )
+}
+
+export default function App() {
   useEffect(() => {
     let key = localStorage.getItem('license_key')
 
@@ -25,10 +58,6 @@ export default function App() {
       }
     }
   }, [])
-
-  const [currentPage, setCurrentPage] = useState(() => {
-    return localStorage.getItem('selectedPage') || 'finance'
-  })
 
   const [activeCategory, setActiveCategory] = useState(() => {
     const saved = localStorage.getItem('selectedCategory')
@@ -46,47 +75,70 @@ export default function App() {
     localStorage.setItem('selectedCategory', lower)
   }
 
-  const handlePageChange = (pageId) => {
-    setCurrentPage(pageId)
-    localStorage.setItem('selectedPage', pageId)
-
-    const targetConfig = PAGES.find((p) => p.id === pageId)
-    if (targetConfig && targetConfig.categories.length > 0) {
-      const firstCategory = targetConfig.categories[0].toLowerCase()
-      setActiveCategory(firstCategory)
-      localStorage.setItem('selectedCategory', firstCategory)
-    }
-  }
-
   const handleS3ToggleChange = (checked) => {
     setIsS3Enabled(checked)
     localStorage.setItem('s3_test_toggle_enabled', checked)
   }
 
-  const activePageConfig = PAGES.find((p) => p.id === currentPage) || PAGES[0]
-
-  const currentProcessor = getProcessor(activeCategory)
+  const financeConfig = PAGES.find((p) => p.id === 'finance')
+  const alphaConfig = PAGES.find((p) => p.id === 'alpha')
+  const terraConfig = PAGES.find((p) => p.id === 'organic')
 
   return (
-    <div className='main-wrapper'>
-      <div className="canvas-pattern">
-        <BackgroundCanvas />
-      </div>
-      <Header
-        pages={PAGES}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-        isS3Enabled={isS3Enabled}
-        onS3ToggleChange={handleS3ToggleChange}
-      />
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <div className="main-wrapper">
+        <div className="canvas-pattern">
+          <BackgroundCanvas />
+        </div>
 
-      <FormatterCore
-        processor={currentProcessor}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-        availableCategories={activePageConfig.categories}
-        isS3Enabled={isS3Enabled}
-      />
-    </div>
+        <Header
+          isS3Enabled={isS3Enabled}
+          onS3ToggleChange={handleS3ToggleChange}
+        />
+
+        <Routes>
+          {/* Пути внутри Routes остаются чистыми (/ , /alpha, /terra) */}
+          <Route
+            path="/"
+            element={
+              <PageContent
+                pageConfig={financeConfig}
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+                isS3Enabled={isS3Enabled}
+              />
+            }
+          />
+          <Route
+            path="/alpha"
+            element={
+              <ProtectedRoute>
+                <PageContent
+                  pageConfig={alphaConfig}
+                  activeCategory={activeCategory}
+                  onCategoryChange={handleCategoryChange}
+                  isS3Enabled={isS3Enabled}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/terra"
+            element={
+              <ProtectedRoute>
+                <PageContent
+                  pageConfig={terraConfig}
+                  activeCategory={activeCategory}
+                  onCategoryChange={handleCategoryChange}
+                  isS3Enabled={isS3Enabled}
+                />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
