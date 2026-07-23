@@ -96,6 +96,10 @@ input[type=number] {
   background: linear-gradient(108deg, #032703 0%, #063003 50%, #1a500a 100%);
 }
 
+.main-wrapper.bg-red {
+  background: linear-gradient(108deg, #9a0e0e 0%, #4d0d0d 50%, #500a2c 100%)
+}
+
 .code-buttons-wrapper {
   display: flex;
   align-items: center;

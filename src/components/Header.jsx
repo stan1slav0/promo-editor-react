@@ -18,6 +18,9 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
     if (path === '/terra') {
       return { title: 'Terra', key: 'terra' }
     }
+    if (path === '/red') {
+      return { title: 'Red Eagle', key: 'red' }
+    }
     // По умолчанию (для '/' и всех остальных путей)
     return { title: 'Finance', key: 'finance' }
   }

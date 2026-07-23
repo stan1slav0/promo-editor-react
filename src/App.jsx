@@ -10,6 +10,7 @@ const PAGES = [
   { id: 'finance', title: 'Finance', path: '/', categories: ['Finance', 'Health', 'Pets'] },
   { id: 'alpha', title: 'Alpha', path: '/alpha', categories: ['Alpha'] },
   { id: 'organic', title: 'Terra', path: '/terra', categories: ['Terra'] },
+  { id: 'red', title: 'Red', path: '/red', categories: ['Red'] },
 ]
 
 // 1. Компонент-обертка, который реагирует на изменение URL РАОНШЕ, чем ProtectedRoute
@@ -21,6 +22,7 @@ function MainLayout({ children }) {
     const path = pathname.toLowerCase()
     if (path.includes('/alpha')) return 'bg-alpha'
     if (path.includes('/terra')) return 'bg-organic'
+    if (path.includes('/red')) return 'bg-red'
     return 'bg-finance'
   }
 
@@ -105,6 +107,7 @@ export default function App() {
   const financeConfig = PAGES.find((p) => p.id === 'finance')
   const alphaConfig = PAGES.find((p) => p.id === 'alpha')
   const terraConfig = PAGES.find((p) => p.id === 'organic')
+  const redConfig = PAGES.find((p) => p.id === 'red')
 
   return (
     <BrowserRouter basename="/promo-editor-react">
@@ -146,6 +149,19 @@ export default function App() {
               <ProtectedRoute>
                 <PageContent
                   pageConfig={terraConfig}
+                  activeCategory={activeCategory}
+                  onCategoryChange={handleCategoryChange}
+                  isS3Enabled={isS3Enabled}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/red"
+            element={
+              <ProtectedRoute>
+                <PageContent
+                  pageConfig={redConfig}
                   activeCategory={activeCategory}
                   onCategoryChange={handleCategoryChange}
                   isS3Enabled={isS3Enabled}

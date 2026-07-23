@@ -61,6 +61,11 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
       const formattedName = `${letters}/creative-${digits}`
       apiPath = `creatives/${formattedName}/${fileName}`
       generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/organic/creatives/${letters}/creative-${digits}/`
+    } else if (currentCat === 'red') {
+      parentParam = 'redeagle'
+      const formattedName = `${letters}/lift-${digits}`
+      apiPath = `promo/${formattedName}/${fileName}`
+      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/redeagle/promo/${letters}/lift-${digits}/`
     } else {
       parentParam = 'global'
       const formattedName = `${letters}/lift-${digits}`
