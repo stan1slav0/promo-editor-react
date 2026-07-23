@@ -32,6 +32,7 @@ $glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255
   box-sizing: border-box;
 }
 
+
 html,
 body {
   min-height: -moz-available;
@@ -60,7 +61,10 @@ input[type=number] {
 }
 
 .main-wrapper {
+  background-color: #0f1117;
   min-height: 100%;
+
+  transition: background 0.3s ease-in-out;
 
   ::-webkit-scrollbar {
     width: 10px;
@@ -85,7 +89,6 @@ input[type=number] {
 }
 
 .main-wrapper.bg-alpha {
-
   background: linear-gradient(108deg, #0e9a90 0%, #0d4d49 50%, #0a4850 100%)
 }
 

@@ -274,7 +274,7 @@ export default function FormatterCore({
   }
 
   return (
-    <div className="main-wrapper">
+    <div >
       <div className="limit">
 
         <div className="main-input-number-block">
