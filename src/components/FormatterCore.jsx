@@ -62,7 +62,6 @@ export default function FormatterCore({
     }
   }
 
-
   useEffect(() => {
     updateImageCountLog()
   }, [])
@@ -86,19 +85,84 @@ export default function FormatterCore({
     return () => clearTimeout(timer)
   }, [isS3Enabled])
 
+  // =========================================================================
+  // ⚡ ЖИВАЯ СИНХРОНИЗАЦИЯ HTML / MJML
+  // =========================================================================
+  const getFormattedName = () => {
+    const raw = fileName.trim() || 'PROMO'
+    return raw.replace(/\s+/g, '').toUpperCase()
+  }
+
+  const recalculateOutputs = async () => {
+    if (!processor) return
+
+    const rawHtml = editorRef.current ? editorRef.current.innerHTML : editorContent
+
+    if (!rawHtml || !rawHtml.trim() || rawHtml === '<br>') {
+      setHtmlOutput('')
+      setMjmlOutput('')
+      return
+    }
+
+    const formattedName = getFormattedName()
+
+    try {
+      const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
+      setHtmlOutput(prettyHtml)
+
+      if (supportsMJML && processor.exportMJML) {
+        const prettyMjml = await processor.exportMJML(rawHtml, formattedName)
+        setMjmlOutput(prettyMjml)
+      } else {
+        setMjmlOutput('')
+      }
+    } catch (err) {
+      // Игнорируем промежуточные ошибки в процессе набора
+    }
+  }
+
+  // Запускаем пересчет при любых изменениях
+  useEffect(() => {
+    recalculateOutputs()
+  }, [editorContent, fileName, activeCategory, processor])
+
+  // 🛠️ MutationObserver отслеживает добавление картнок, удаление и вставку тегов напрямую в DOM
+  useEffect(() => {
+    if (!editorRef.current) return
+
+    const observer = new MutationObserver(() => {
+      if (editorRef.current) {
+        const html = editorRef.current.innerHTML
+        setEditorContent(html)
+        updateImageCountLog()
+
+        clearTimeout(window.altTimeout)
+        window.altTimeout = setTimeout(() => {
+          analyzeEditorImages()
+        }, 800)
+      }
+    })
+
+    observer.observe(editorRef.current, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
+  // Обработчик стандартного ввода
   const handleEditorInput = (e) => {
-    setEditorContent(e.currentTarget.innerHTML)
+    const currentHtml = e.currentTarget.innerHTML
+    setEditorContent(currentHtml)
     updateImageCountLog()
 
     clearTimeout(window.altTimeout)
     window.altTimeout = setTimeout(() => {
       analyzeEditorImages()
     }, 800)
-  }
-
-  const getFormattedName = () => {
-    const raw = fileName.trim() || 'PROMO'
-    return raw.replace(/\s+/g, '').toUpperCase()
   }
 
   const changeNumber = (amount) => {
@@ -232,35 +296,27 @@ export default function FormatterCore({
     }
   }
 
-
   const analyzeEditorImages = async () => {
     if (!editorRef.current) return
 
-    // 1. Быстрая проверка: есть ли картинки без alt?
     const imgs = Array.from(editorRef.current.querySelectorAll('img'))
     const pendingImgs = imgs.filter(img => !img.getAttribute('alt') || img.getAttribute('alt').trim() === '')
 
-    // Если картинок нет — сразу выходим без блокировки и без лишних логов
     if (pendingImgs.length === 0) return
 
-    // 2. Включаем блокировку и СРАЗУ пишем, что ИИ обрабатывает картинки
     setIsAnalyzing(true)
     setLogText(`🤖 AI is analyzing ${pendingImgs.length} image${pendingImgs.length > 1 ? 's' : ''}...`)
 
-    // Даем React миллисекунду на перерисовку заблокированного состояния кнопок
     await new Promise(resolve => setTimeout(resolve, 0))
 
     try {
-      // 3. Запускаем генерацию ALT
       await generateAltTextsForImages(pendingImgs, (statusMessage) => {
-        // Опционально: если внутри generateAltTextsForImages передается прогресс
         setLogText(`🤖 ${statusMessage}`)
       })
 
-      // Обновляем HTML в редакторе
-      setEditorContent(editorRef.current.innerHTML)
+      const updatedHtml = editorRef.current.innerHTML
+      setEditorContent(updatedHtml)
 
-      // 4. Финальное сообщение после успешного завершения
       const word = pendingImgs.length === 1 ? 'image' : 'images'
       setLogText(`✅ ${pendingImgs.length} ${word} processed and ready!`)
 
@@ -268,13 +324,12 @@ export default function FormatterCore({
       console.error('AI Alt Generation failed:', err)
       setLogText(`⚠️ AI Alt generation error: ${err.message}`)
     } finally {
-      // 5. Разблокируем кнопки
       setIsAnalyzing(false)
     }
   }
 
   return (
-    <div >
+    <div>
       <div className="limit">
 
         <div className="main-input-number-block">
