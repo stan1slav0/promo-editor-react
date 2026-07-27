@@ -8,7 +8,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
   const { country, isUS, isInitialLoading, isRefreshing, refreshRegion } = useVpnRegion()
   const location = useLocation()
 
-  // Определяем, какую ОДНУ кнопку выводить в зависимости от URL
   const getSingleTab = () => {
     const path = location.pathname.toLowerCase()
 
@@ -21,7 +20,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
     if (path === '/red') {
       return { title: 'Red Eagle', key: 'red' }
     }
-    // По умолчанию (для '/' и всех остальных путей)
     return { title: 'Finance', key: 'finance' }
   }
 
@@ -29,7 +27,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
 
   return (
     <>
-      {/* 🔒 ПОЛНОЭКРАННАЯ БЛОКИРУЮЩАЯ ПОДЛОЖКА (При первой проверке IP) */}
       <AnimatePresence>
         {isInitialLoading && (
           <motion.div
@@ -85,7 +82,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        {/* 🧭 ЕДИНСТВЕННАЯ КНОПКА КАТЕГОРИИ 🧭 */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px' }}>
             {!isInitialLoading && (
@@ -115,7 +111,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
             )}
           </div>
 
-          {/* Индикатор региона */}
           <div
             style={{
               fontSize: '12px',
@@ -150,7 +145,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
           </div>
         </div>
 
-        {/* ☁️ TOGGLE S3 STORAGE ☁️ */}
         <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
             ☁️ S3 Storage Mode:

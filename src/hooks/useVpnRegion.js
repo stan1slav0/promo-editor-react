@@ -10,7 +10,7 @@ export function useVpnRegion() {
     country: null,
     isUS: false,
     isEU: false,
-    isInitialLoading: true, // 🔒 Показывает оверлей только при ПЕРВОМ запуске
+    isInitialLoading: true,
     isRefreshing: false
   })
 
@@ -22,7 +22,6 @@ export function useVpnRegion() {
     try {
       let countryCode = null
 
-      // Попытка 1: ipwho.is
       try {
         const res = await fetch('https://ipwho.is/')
         if (res.ok) {
@@ -32,10 +31,8 @@ export function useVpnRegion() {
           }
         }
       } catch (e) {
-        // Игнорируем и пробуем fallback
       }
 
-      // Попытка 2: ip-api.com
       if (!countryCode) {
         const resFallback = await fetch('https://ip-api.com/json/?fields=status,countryCode')
         if (resFallback.ok) {
@@ -70,10 +67,8 @@ export function useVpnRegion() {
   }, [])
 
   useEffect(() => {
-    // 1. Первичная проверка при старте
     checkRegion(true)
 
-    // 2. Опрос раз в 8 секунд и ТОЛЬКО когда вкладка активна
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         checkRegion(false)

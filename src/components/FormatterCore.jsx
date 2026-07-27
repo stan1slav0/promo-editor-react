@@ -85,9 +85,6 @@ export default function FormatterCore({
     return () => clearTimeout(timer)
   }, [isS3Enabled])
 
-  // =========================================================================
-  // ⚡ ЖИВАЯ СИНХРОНИЗАЦИЯ HTML / MJML
-  // =========================================================================
   const getFormattedName = () => {
     const raw = fileName.trim() || 'PROMO'
     return raw.replace(/\s+/g, '').toUpperCase()
@@ -117,16 +114,13 @@ export default function FormatterCore({
         setMjmlOutput('')
       }
     } catch (err) {
-      // Игнорируем промежуточные ошибки в процессе набора
     }
   }
 
-  // Запускаем пересчет при любых изменениях
   useEffect(() => {
     recalculateOutputs()
   }, [editorContent, fileName, activeCategory, processor])
 
-  // 🛠️ MutationObserver отслеживает добавление картнок, удаление и вставку тегов напрямую в DOM
   useEffect(() => {
     if (!editorRef.current) return
 
@@ -153,7 +147,6 @@ export default function FormatterCore({
     return () => observer.disconnect()
   }, [])
 
-  // Обработчик стандартного ввода
   const handleEditorInput = (e) => {
     const currentHtml = e.currentTarget.innerHTML
     setEditorContent(currentHtml)

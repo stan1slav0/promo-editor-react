@@ -7,7 +7,6 @@ export default function BackgroundCanvas() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    // Проверяем WebGL2 с фоллбэком
     const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
     if (!gl) {
       console.warn('WebGL не поддерживается браузером.')
@@ -176,7 +175,6 @@ export default function BackgroundCanvas() {
 
     animationFrameId = requestAnimationFrame(render)
 
-    // Cleanup при размонтировании компонента
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
@@ -193,8 +191,8 @@ export default function BackgroundCanvas() {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: -1, // Помещаем за весь интерфейс
-        pointerEvents: 'none', // Пропускаем клики
+        zIndex: -1,
+        pointerEvents: 'none',
         display: 'block'
       }}
     />

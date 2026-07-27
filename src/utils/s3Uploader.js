@@ -1,11 +1,7 @@
 import { getBlobFromSrc, toJpeg600, injectMetadata } from './imageProcessor'
 
-// --- S3 UPLOADER MODULE ---
 const PROXY_URL = "https://small-fire-960e.pingo-mw2.workers.dev/"
 
-/**
- * Выполняет загрузку обработанных изображений на S3 сервер через прокси.
- */
 export async function uploadImagesToS3(imgs, categoryText, folderName, activeCategoryBtn, logEl) {
   const letters = folderName.replace(/[^a-zA-Z]/g, '').toLowerCase()
   const digits = folderName.replace(/[^0-9]/g, '')
@@ -31,7 +27,6 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
 
     logEl.innerHTML = `⚙️ Processing image ${index} of ${totalCount}...`
 
-    // ПРЯМОЙ ВЫЗОВ ФУНКЦИИ ИМПОРТА (без window)
     const blob = await getBlobFromSrc(src)
     if (!blob) {
       logEl.innerHTML = `❌ Failed to download source image ${index}`

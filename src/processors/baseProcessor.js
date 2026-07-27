@@ -10,7 +10,6 @@ export class BaseProcessor {
     return result
   }
 
-  // Общий метод для всех направлений
   processHTML(html, promoName) {
     return this.cleanEmptyTags(html)
   }
