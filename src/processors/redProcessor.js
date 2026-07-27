@@ -1,7 +1,6 @@
 import prettier from 'prettier/standalone'
 import prettierPluginHtml from 'prettier/plugins/html'
 
-// Синий спектр цветов для кликабельных ссылок Alpha
 const blueColors = [
   '#0000FF', 'rgb\\(0,\\s*0,\\s*255\\)', '#CFE2F3', 'rgb\\(207,\\s*226,\\s*243\\)',
   '#9FC5E8', 'rgb\\(159,\\s*197,\\s*232\\)', '#6FA8DC', 'rgb\\(111,\\s*168,\\s*220\\)',
@@ -16,11 +15,10 @@ const blueColors = [
 
 class RedProcessor {
   constructor() {
-    this.categoryName = 'red'
+    this.categoryName = 'redeagle'
     this.hasMJML = false
   }
 
-  // Динамическая генерация пути картинок для Alpha Engine
   generateDynamicImgSrc(index, promoNameFormatted) {
     const promoName = (promoNameFormatted || 'promo').toLowerCase()
     const prefixMatch = promoName.match(/[a-z]+/)
@@ -70,23 +68,26 @@ class RedProcessor {
 
   italicLinks(htmlContent) {
     htmlContent = htmlContent.replace(/<a[^>]*>/gi, '').replace(/<\/a>/gi, '')
-    blueColors.forEach((color) => {
+    blueColors.forEach((color, index) => {
       const regex = new RegExp(`<span[^>]*style="[^"]*color:\\s*${color}[^"]*;[^"]*font-style:\\s*italic[^"]*"[^>]*>(.*?)<\\/span>`, 'gi')
-      htmlContent = htmlContent.replace(regex, '<a href="urlhere" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-weight: 700;color: #0404e4;text-decoration: underline;"><em>$1</em></a>')
+      htmlContent = htmlContent.replace(regex, '<a href="urlhere" style="font-family:\'Noto Sans\', Arial, Helvetica, sans-serif;font-weight: 700;color: #0d0de3;text-decoration: underline;"><em>$1</em></a>')
     })
+
     return htmlContent
   }
 
   linksStyles(htmlContent) {
-    blueColors.forEach((color) => {
+    blueColors.forEach((color, index) => {
       const reg = new RegExp(`<span[^>]*style="[^"]*color:\\s*(${color})[^"]*"[^>]*>(.*?)<\\/span>`, 'gi')
-      htmlContent = htmlContent.replace(reg, '<a href="urlhere" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-weight: 700;color: #0404e4;text-decoration: underline;">$2</a>')
+      htmlContent = htmlContent.replace(reg, '<a href="urlhere" style="font-family:\'Noto Sans\', Arial, Helvetica, sans-serif;font-weight: 700;color: #0d0de3;text-decoration: underline;">$2</a>')
     })
+
     return htmlContent
   }
 
   replaceAllEmojisAndSymbolsExcludingHTML(htmlContent) {
     const rx = /(?:\p{Extended_Pictographic}|(?![<>=&%"'#;:_-])[\p{S}\p{No}])(?:\uFE0F)?/gu
+
     return htmlContent.replace(rx, match => {
       return Array.from(match)
         .map(ch => `&#${ch.codePointAt(0)};`)
@@ -103,12 +104,10 @@ class RedProcessor {
     htmlContent = htmlContent.replace(/<span[^>]*style="[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi, '<u>$1</u>')
     htmlContent = htmlContent.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*"[^>]*>(.*?)<\/span>/gi, '<b>$1</b>')
     htmlContent = htmlContent.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gi, '<i>$1</i>')
-
     htmlContent = htmlContent.replace(/<a[^>]*>\s*<\/a>/g, ' ')
     htmlContent = htmlContent.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '')
     htmlContent = htmlContent.replace(/<span[^>]*>/gi, '').replace(/<\/span>/gi, '')
     htmlContent = htmlContent.replace(/<b>\s*<\/b>/g, '')
-
     htmlContent = htmlContent.replace(/<table[^>]*>/gi, '').replace(/<\/table>/gi, '')
     htmlContent = htmlContent.replace(/<tbody[^>]*>/gi, '').replace(/<\/tbody>/gi, '')
     htmlContent = htmlContent.replace(/<tr[^>]*>/gi, '').replace(/<\/tr>/gi, '')
@@ -122,19 +121,19 @@ class RedProcessor {
   wrapSmallCenterTextHtml(htmlContent) {
     return htmlContent.replace(/<h6[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h6>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -142,19 +141,19 @@ class RedProcessor {
   wrapSmallTextHtml(htmlContent) {
     return htmlContent.replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -162,19 +161,19 @@ class RedProcessor {
   wrapCenterHeadlineHtml(htmlContent) {
     return htmlContent.replace(/<h1[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h1>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <b style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <strong style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;">
                        ${content}
-                  </b>
+                  </strong>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -182,19 +181,19 @@ class RedProcessor {
   wrapCenterQuoteHtml(htmlContent) {
     return htmlContent.replace(/<h4[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h4>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr> 
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -202,19 +201,19 @@ class RedProcessor {
   wrapQuoteHtml(htmlContent) {
     return htmlContent.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr>            
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -222,19 +221,19 @@ class RedProcessor {
   wrapHeadlineHtml(htmlContent) {
     return htmlContent.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <b style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <strong style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;">
                        ${content}
-                  </b>
+                  </strong>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -242,19 +241,19 @@ class RedProcessor {
   wrapCenterTextHtml(htmlContent) {
     return htmlContent.replace(/<p[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/p>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                    <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                    <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                         ${content}
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -262,17 +261,17 @@ class RedProcessor {
   wrapButtonHtml(htmlContent) {
     return htmlContent.replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
-              
+             
               <tr>
                  <td align="center" style="padding-top: 16px; padding-bottom: 16px;">
 
                     <table cellpadding="0" cellspacing="0" role="presentation">
                         <tr>
-                            <td class="custom-button" height="53" align="center" style="border-radius: 10px;font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;font-weight: bold; color: #FFFFFF; padding: 3px 4px; background-color: #25b625;" bgcolor="#25b625">
-                               <a href="urlhere" target="_blank" style="font-weight: bold;text-decoration:none;color:#ffffff;padding: 10px 20px;display: block;font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;background-color: #25b625; border-radius: 10px;">
+                            <td class="base-button" height="53" align="center" style="border-radius: 12px;font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;font-weight: bold; color: #FFFFFF; padding: 3px 4px; background-color: #29c329;" bgcolor="#29c329">
+                               <a href="urlhere" target="_blank" style="font-weight: bold;text-decoration:none;color:#ffffff;padding: 10px 20px;display: block;font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;background-color: #29c329; border-radius: 12px;">
                                     ${content}
                                </a>
                             </td>
@@ -281,8 +280,8 @@ class RedProcessor {
                  </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -290,26 +289,26 @@ class RedProcessor {
   wrapRightSideImg(htmlContent) {
     return htmlContent.replace(/i-r-s([\s\S]*?)i-r-s-e/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
               <tr>
-                <td align="left" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 15px; padding-top: 15px;">
+                <td align="left" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 15px; padding-top: 15px;">
                   <a align="right" href="urlhere" target="_blank" style="display: inline-block; float: right; width: 50%; max-width: 50%; margin-left: 18px; margin-bottom: 12px;">
                     <img alt="Preview" height="224"
                          align="right"
-                         src="https://alphaonest.com/"
+                         src="https://reagstr.com/"
                          style="border:0;display:inline-block;outline:none;text-decoration:none;height:auto;max-height: 224px;max-width: 100%; width: 100%;font-size:13px;object-fit: contain;"
                          width="250"/>
                   </a>
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -317,26 +316,26 @@ class RedProcessor {
   wrapLeftSideImg(htmlContent) {
     return htmlContent.replace(/i-l-s([\s\S]*?)i-l-s-e/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
               <tr>
-                <td align="left" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 16px; padding-top: 16px;">
+                <td align="left" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 16px; padding-top: 16px;">
                   <a align="left" href="urlhere" target="_blank" style="display: inline-block; float: left; width: 50%; max-width: 50%; margin-right: 18px; margin-bottom: 12px;">
                     <img alt="Preview" height="224"
                          align="left"
-                         src="https://alphaonest.com/"
+                         src="https://reagstr.com/"
                          style="border:0;display:inline-block;outline:none;text-decoration:none;height:auto;max-height: 224px;max-width: 100%; width: 100%;font-size:13px;object-fit: contain;"
                          width="250"/>
                   </a>
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -344,20 +343,20 @@ class RedProcessor {
   wrapSignatureImg(htmlContent) {
     return htmlContent.replace(/sign-i([\s\S]*?)sign-i-e/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
                 <td class="image-block" align="left" style="padding-top: 16px; padding-bottom: 16px;">
                    <img alt="Signature" height="auto"
-                        src="https://alphaonest.com/"
+                        src="https://reagstr.com/"
                         style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:220px;max-width: 220px;font-size:13px;"
                         width="220"/>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -365,19 +364,19 @@ class RedProcessor {
   wrapFooterBlock(htmlContent) {
     return htmlContent.replace(/ftr-s([\s\S]*?)ftr-e/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 25px; padding-bottom: 15px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 25px; padding-bottom: 15px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -385,19 +384,19 @@ class RedProcessor {
   wrapFooterCenterBlock(htmlContent) {
     return htmlContent.replace(/ftr-c([\s\S]*?)ftr-c-e/gi, function (match, content) {
       return `
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 25px; padding-bottom: 15px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 25px; padding-bottom: 15px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${content}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `
     })
   }
@@ -405,10 +404,20 @@ class RedProcessor {
   replaceTripleBrWithSingle(htmlContent) {
     const BR = `<br>\n`
     htmlContent = htmlContent.replace(/(<br\s*\/?>\s*)+(<\/(?:div|td|tr|table|span)>)/gi, '$2')
-    htmlContent = htmlContent.replace(/<\w+[^>]*>\s*<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>\s*<\/\w+>/gi, BR)
-    htmlContent = htmlContent.replace(/<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>/gi, BR)
-    htmlContent = htmlContent.replace(/\s*<br\s*\/?>\s*<\/(\w+)>/gi, '</$1><br>')
+    htmlContent = htmlContent.replace(
+      /<\w+[^>]*>\s*<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>\s*<\/\w+>/gi,
+      BR
+    )
+    htmlContent = htmlContent.replace(
+      /<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>/gi,
+      BR
+    )
+    htmlContent = htmlContent.replace(
+      /\s*<br\s*\/?>\s*<\/(\w+)>/gi,
+      '</$1><br>'
+    )
     htmlContent = htmlContent.replace(/(?:<br\s*\/?>\s*){3,}/gi, BR)
+
     return htmlContent
   }
 
@@ -417,6 +426,7 @@ class RedProcessor {
     htmlContent = htmlContent.replace(/<\/p>(?!\s*<\/li>)/gi, '</p>\n<br><br>\n')
     htmlContent = htmlContent.replace(/<br><br>(\s*<(ol|ul)[^>]*>)/gi, '<br>\n$1')
     htmlContent = htmlContent.replace(/<p[^>]*>/gi, '').replace(/<\/p>/gi, '')
+
     return htmlContent
   }
 
@@ -437,29 +447,30 @@ class RedProcessor {
       const imageAlt = rawAlt.replace(/"/g, '&quot;').trim()
 
       const dynamicSrc = this.generateDynamicImgSrc(currentIdx++, promoNameFormatted)
-      return `      </div>
+
+      return `      </span>
                        </td>
                    </tr>
                    <tr>
-                       <td class="image-full-wrapper" align="center" style="padding-top: 16px; padding-bottom: 16px;">
+                       <td class="full-img-block" align="center" style="padding-top: 16px; padding-bottom: 16px;">
                            <a href="urlhere" target="_blank">
                                <img alt="${imageAlt}" height="auto"
-                                   src="${dynamicSrc}"
-                                   style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 562px;font-size:13px;"
-                                   width="562"/>
+                                    src="${dynamicSrc}"
+                                    style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 564px;font-size:12px;"
+                                    width="564"/>
                            </a>
                        </td>
                     </tr>
                     <tr>
-                       <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                            <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">`
+                       <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                            <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">`
     })
 
     htmlContent = `<tr>
-                      <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                                <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                      <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                                <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                                     ${htmlContent}
-                                </div>
+                                </span>
                       </td>
                     </tr>`
 
@@ -536,7 +547,6 @@ class RedProcessor {
     return htmlContent.replace(/ю/gi, () => `\n                    <br>\n        `)
   }
 
-  // Главный экспорт HTML для Alpha Engine
   async exportHTML(rawEditorContent, promoName) {
     let editorContent = rawEditorContent
     editorContent = this.preserveSingleBr(editorContent)
@@ -569,7 +579,6 @@ class RedProcessor {
     return await this.formatWithPrettier(editorContent)
   }
 
-  // Заглушка для генерации MJML (если не используется)
   async exportMJML(rawEditorContent, promoName) {
     return await this.exportHTML(rawEditorContent, promoName)
   }
