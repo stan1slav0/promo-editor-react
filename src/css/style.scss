@@ -9,7 +9,16 @@ $neon-pink: #DE46D4;
 $neon-blue: #6BF8F9;
 $glass-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
 
+.limit-main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .limit {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   position: relative;
   margin: 0 auto;
   max-width: 1440px;
@@ -39,6 +48,7 @@ body {
   min-height: -webkit-fill-available;
   min-height: fill-available;
   height: 100%;
+  overscroll-behavior: none;
 }
 
 body {
@@ -63,6 +73,9 @@ input[type=number] {
 .main-wrapper {
   background-color: #0f1117;
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 
   transition: background 0.3s ease-in-out;
 
@@ -420,11 +433,12 @@ input[type=number] {
 
 .flex-cols {
   display: flex;
+  flex-grow: 1;
   align-items: stretch;
   align-content: stretch;
   gap: 24px;
   margin-top: 24px;
-  min-height: calc(100vh - 92px - 40px - 48px - 100px);
+  // min-height: calc(100vh - 92px - 40px - 48px - 100px);
   position: relative;
 
   &_cat::before {
