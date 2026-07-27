@@ -1107,116 +1107,116 @@ $1`),e=e.replace(/<p[^>]*>/gi,``).replace(/<\/p>/gi,``),e}removeStylesFromLists(
         </tr>
     </table>`}preserveSingleBr(e){return e=e.replace(/<div[^>]*>\s*<br\s*\/?>\s*<\/div>/gi,`ю`),e=e.replace(/<span[^>]*>\s*<br\s*\/?>\s*<\/span>/gi,`ю`),e}addOneBr(e){return e.replace(/ю/gi,()=>`
                     <br>
-        `)}async exportHTML(e,t){let n=e;return n=this.preserveSingleBr(n),n=this.italicLinks(n),n=this.linksStyles(n),n=this.replaceAllEmojisAndSymbolsExcludingHTML(n),n=this.processStyles(n),n=this.wrapCenterTextHtml(n),n=this.wrapSmallCenterTextHtml(n),n=this.wrapSmallTextHtml(n),n=this.wrapCenterHeadlineHtml(n),n=this.wrapHeadlineHtml(n),n=this.wrapButtonHtml(n),n=this.wrapCenterQuoteHtml(n),n=this.wrapQuoteHtml(n),n=this.addBrAfterClosingP(n),n=this.removeStylesFromLists(n),n=this.wrapTextInSpan(n,t),n=this.wrapRightSideImg(n),n=this.wrapLeftSideImg(n),n=this.wrapSignatureImg(n),n=this.wrapFooterBlock(n),n=this.wrapFooterCenterBlock(n),n=this.cleanEmptyHtmlTags(n),n=this.wrapContentInFullTableStructure(n),n=this.addOneBr(n),n=this.replaceTripleBrWithSingle(n),await this.formatWithPrettier(n)}async exportMJML(e,t){return await this.exportHTML(e,t)}},HO=`#0000FF.rgb\\(0,\\s*0,\\s*255\\).#CFE2F3.rgb\\(207,\\s*226,\\s*243\\).#9FC5E8.rgb\\(159,\\s*197,\\s*232\\).#6FA8DC.rgb\\(111,\\s*168,\\s*220\\).#3D85C6.rgb\\(61,\\s*133,\\s*198\\).#0B5394.rgb\\(11,\\s*83,\\s*148\\).#073763.rgb\\(7,\\s*55,\\s*99\\).#4A86E8.rgb\\(74,\\s*134,\\s*232\\).#C9DAF8.rgb\\(201,\\s*218,\\s*248\\).#A4C2F4.rgb\\(164,\\s*194,\\s*244\\).#6D9EEB.rgb\\(109,\\s*158,\\s*235\\).#1155CC.rgb\\(17,\\s*85,\\s*204\\).#1C4587.rgb\\(28,\\s*69,\\s*135\\).#3C78D8.rgb\\(60,\\s*120,\\s*216\\).#467886.rgb\\(70,\\s*120,\\s*134\\).#0033CC.rgb\\(0,\\s*51,\\s*204\\).#0066B3.rgb\\(0,\\s*102,\\s*179\\)`.split(`.`),UO=new class{constructor(){this.categoryName=`red`,this.hasMJML=!1}generateDynamicImgSrc(e,t){let n=(t||`promo`).toLowerCase(),r=n.match(/[a-z]+/),i=n.match(/\d+/);return`https://reagstr.com/files/promo/${r?r[0]:`promo`}/lift-${i?i[0]:`0`}/img-${e}.jpg`}async formatWithPrettier(e){try{let t=await Yp.format(e,{parser:`html`,plugins:[Qb],printWidth:120,tabWidth:2,useTabs:!1,singleAttributePerLine:!1,bracketSameLine:!0,htmlWhitespaceSensitivity:`ignore`});return t=t.trim(),t=t.replace(/(<[a-z0-9]+)\s+([^>]+?)\s*>/gi,(e,t,n)=>`${t} ${n.replace(/\s+/g,` `).trim()}>`),t=t.replace(/<br\s*\/?>/gi,`<br>`),t=t.replace(/<br>\s+(?=<br>)/g,`<br>`),t=t.replace(/\s+([.,!?:;])/g,`$1`),t=t.replace(/(<a[^>]*>)([\s\S]*?)(<\/a>)/gi,(e,t,n,r)=>`${t}${n.replace(/\s+/g,` `).trim()}${r}`),t}catch(t){return console.error(`Ошибка Prettier:`,t),e}}italicLinks(e){return e=e.replace(/<a[^>]*>/gi,``).replace(/<\/a>/gi,``),HO.forEach(t=>{let n=RegExp(`<span[^>]*style="[^"]*color:\\s*${t}[^"]*;[^"]*font-style:\\s*italic[^"]*"[^>]*>(.*?)<\\/span>`,`gi`);e=e.replace(n,`<a href="urlhere" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-weight: 700;color: #0404e4;text-decoration: underline;"><em>$1</em></a>`)}),e}linksStyles(e){return HO.forEach(t=>{let n=RegExp(`<span[^>]*style="[^"]*color:\\s*(${t})[^"]*"[^>]*>(.*?)<\\/span>`,`gi`);e=e.replace(n,`<a href="urlhere" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-weight: 700;color: #0404e4;text-decoration: underline;">$2</a>`)}),e}replaceAllEmojisAndSymbolsExcludingHTML(e){return e.replace(/(?:\p{Extended_Pictographic}|(?![<>=&%"'#;:_-])[\p{S}\p{No}])(?:\uFE0F)?/gu,e=>Array.from(e).map(e=>`&#${e.codePointAt(0)};`).join(``))}processStyles(e){return e=e.replace(/<b[^>]*>/gi,``).replace(/<\/b>/gi,``),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*font-style:\s*italic[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<i style="text-decoration: underline;font-weight: bold;">$1</i>`),e=e.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<i style="text-decoration: underline;">$1</i>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*font-style:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gi,`<b style="font-style: italic;">$1</b>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<b style="text-decoration: underline;">$1</b>`),e=e.replace(/<span[^>]*style="[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<u>$1</u>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*"[^>]*>(.*?)<\/span>/gi,`<b>$1</b>`),e=e.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gi,`<i>$1</i>`),e=e.replace(/<a[^>]*>\s*<\/a>/g,` `),e=e.replace(/<div[^>]*>/gi,``).replace(/<\/div>/gi,``),e=e.replace(/<span[^>]*>/gi,``).replace(/<\/span>/gi,``),e=e.replace(/<b>\s*<\/b>/g,``),e=e.replace(/<table[^>]*>/gi,``).replace(/<\/table>/gi,``),e=e.replace(/<tbody[^>]*>/gi,``).replace(/<\/tbody>/gi,``),e=e.replace(/<tr[^>]*>/gi,``).replace(/<\/tr>/gi,``),e=e.replace(/<td[^>]*>/gi,``).replace(/<\/td>/gi,``),e=e.replace(/<col[^>]*>/gi,``).replace(/<\/col>/gi,``),e=e.replace(/<colgroup[^>]*>/gi,``).replace(/<\/colgroup>/gi,``),e}wrapSmallCenterTextHtml(e){return e.replace(/<h6[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h6>/gi,function(e,t){return`
-                    </div>
+        `)}async exportHTML(e,t){let n=e;return n=this.preserveSingleBr(n),n=this.italicLinks(n),n=this.linksStyles(n),n=this.replaceAllEmojisAndSymbolsExcludingHTML(n),n=this.processStyles(n),n=this.wrapCenterTextHtml(n),n=this.wrapSmallCenterTextHtml(n),n=this.wrapSmallTextHtml(n),n=this.wrapCenterHeadlineHtml(n),n=this.wrapHeadlineHtml(n),n=this.wrapButtonHtml(n),n=this.wrapCenterQuoteHtml(n),n=this.wrapQuoteHtml(n),n=this.addBrAfterClosingP(n),n=this.removeStylesFromLists(n),n=this.wrapTextInSpan(n,t),n=this.wrapRightSideImg(n),n=this.wrapLeftSideImg(n),n=this.wrapSignatureImg(n),n=this.wrapFooterBlock(n),n=this.wrapFooterCenterBlock(n),n=this.cleanEmptyHtmlTags(n),n=this.wrapContentInFullTableStructure(n),n=this.addOneBr(n),n=this.replaceTripleBrWithSingle(n),await this.formatWithPrettier(n)}async exportMJML(e,t){return await this.exportHTML(e,t)}},HO=`#0000FF.rgb\\(0,\\s*0,\\s*255\\).#CFE2F3.rgb\\(207,\\s*226,\\s*243\\).#9FC5E8.rgb\\(159,\\s*197,\\s*232\\).#6FA8DC.rgb\\(111,\\s*168,\\s*220\\).#3D85C6.rgb\\(61,\\s*133,\\s*198\\).#0B5394.rgb\\(11,\\s*83,\\s*148\\).#073763.rgb\\(7,\\s*55,\\s*99\\).#4A86E8.rgb\\(74,\\s*134,\\s*232\\).#C9DAF8.rgb\\(201,\\s*218,\\s*248\\).#A4C2F4.rgb\\(164,\\s*194,\\s*244\\).#6D9EEB.rgb\\(109,\\s*158,\\s*235\\).#1155CC.rgb\\(17,\\s*85,\\s*204\\).#1C4587.rgb\\(28,\\s*69,\\s*135\\).#3C78D8.rgb\\(60,\\s*120,\\s*216\\).#467886.rgb\\(70,\\s*120,\\s*134\\).#0033CC.rgb\\(0,\\s*51,\\s*204\\).#0066B3.rgb\\(0,\\s*102,\\s*179\\)`.split(`.`),UO=new class{constructor(){this.categoryName=`redeagle`,this.hasMJML=!1}generateDynamicImgSrc(e,t){let n=(t||`promo`).toLowerCase(),r=n.match(/[a-z]+/),i=n.match(/\d+/);return`https://reagstr.com/files/promo/${r?r[0]:`promo`}/lift-${i?i[0]:`0`}/img-${e}.jpg`}async formatWithPrettier(e){try{let t=await Yp.format(e,{parser:`html`,plugins:[Qb],printWidth:120,tabWidth:2,useTabs:!1,singleAttributePerLine:!1,bracketSameLine:!0,htmlWhitespaceSensitivity:`ignore`});return t=t.trim(),t=t.replace(/(<[a-z0-9]+)\s+([^>]+?)\s*>/gi,(e,t,n)=>`${t} ${n.replace(/\s+/g,` `).trim()}>`),t=t.replace(/<br\s*\/?>/gi,`<br>`),t=t.replace(/<br>\s+(?=<br>)/g,`<br>`),t=t.replace(/\s+([.,!?:;])/g,`$1`),t=t.replace(/(<a[^>]*>)([\s\S]*?)(<\/a>)/gi,(e,t,n,r)=>`${t}${n.replace(/\s+/g,` `).trim()}${r}`),t}catch(t){return console.error(`Ошибка Prettier:`,t),e}}italicLinks(e){return e=e.replace(/<a[^>]*>/gi,``).replace(/<\/a>/gi,``),HO.forEach((t,n)=>{let r=RegExp(`<span[^>]*style="[^"]*color:\\s*${t}[^"]*;[^"]*font-style:\\s*italic[^"]*"[^>]*>(.*?)<\\/span>`,`gi`);e=e.replace(r,`<a href="urlhere" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-weight: 700;color: #0d0de3;text-decoration: underline;"><em>$1</em></a>`)}),e}linksStyles(e){return HO.forEach((t,n)=>{let r=RegExp(`<span[^>]*style="[^"]*color:\\s*(${t})[^"]*"[^>]*>(.*?)<\\/span>`,`gi`);e=e.replace(r,`<a href="urlhere" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-weight: 700;color: #0d0de3;text-decoration: underline;">$2</a>`)}),e}replaceAllEmojisAndSymbolsExcludingHTML(e){return e.replace(/(?:\p{Extended_Pictographic}|(?![<>=&%"'#;:_-])[\p{S}\p{No}])(?:\uFE0F)?/gu,e=>Array.from(e).map(e=>`&#${e.codePointAt(0)};`).join(``))}processStyles(e){return e=e.replace(/<b[^>]*>/gi,``).replace(/<\/b>/gi,``),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*font-style:\s*italic[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<i style="text-decoration: underline;font-weight: bold;">$1</i>`),e=e.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<i style="text-decoration: underline;">$1</i>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*font-style:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gi,`<b style="font-style: italic;">$1</b>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*;[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<b style="text-decoration: underline;">$1</b>`),e=e.replace(/<span[^>]*style="[^"]*text-decoration:\s*underline[^"]*"[^>]*>(.*?)<\/span>/gi,`<u>$1</u>`),e=e.replace(/<span[^>]*style="[^"]*font-weight:\s*700[^"]*"[^>]*>(.*?)<\/span>/gi,`<b>$1</b>`),e=e.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*"[^>]*>(.*?)<\/span>/gi,`<i>$1</i>`),e=e.replace(/<a[^>]*>\s*<\/a>/g,` `),e=e.replace(/<div[^>]*>/gi,``).replace(/<\/div>/gi,``),e=e.replace(/<span[^>]*>/gi,``).replace(/<\/span>/gi,``),e=e.replace(/<b>\s*<\/b>/g,``),e=e.replace(/<table[^>]*>/gi,``).replace(/<\/table>/gi,``),e=e.replace(/<tbody[^>]*>/gi,``).replace(/<\/tbody>/gi,``),e=e.replace(/<tr[^>]*>/gi,``).replace(/<\/tr>/gi,``),e=e.replace(/<td[^>]*>/gi,``).replace(/<\/td>/gi,``),e=e.replace(/<col[^>]*>/gi,``).replace(/<\/col>/gi,``),e=e.replace(/<colgroup[^>]*>/gi,``).replace(/<\/colgroup>/gi,``),e}wrapSmallCenterTextHtml(e){return e.replace(/<h6[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h6>/gi,function(e,t){return`
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapSmallTextHtml(e){return e.replace(/<h6[^>]*>([\s\S]*?)<\/h6>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapCenterHeadlineHtml(e){return e.replace(/<h1[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h1>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <b style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <strong style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:center;color:#000000;">
                        ${t}
-                  </b>
+                  </strong>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapCenterQuoteHtml(e){return e.replace(/<h4[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h4>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr> 
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapQuoteHtml(e){return e.replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-left: 20px;padding-right: 20px;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr>            
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapHeadlineHtml(e){return e.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <b style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <strong style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:24px;font-style:normal;font-weight:bold;line-height:1.5;text-align:left;color:#000000;">
                        ${t}
-                  </b>
+                  </strong>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapCenterTextHtml(e){return e.replace(/<p[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/p>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                    <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                    <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                         ${t}
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapButtonHtml(e){return e.replace(/<h5[^>]*>([\s\S]*?)<\/h5>/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
-              
+             
               <tr>
                  <td align="center" style="padding-top: 16px; padding-bottom: 16px;">
 
                     <table cellpadding="0" cellspacing="0" role="presentation">
                         <tr>
-                            <td class="custom-button" height="53" align="center" style="border-radius: 10px;font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;font-weight: bold; color: #FFFFFF; padding: 3px 4px; background-color: #25b625;" bgcolor="#25b625">
-                               <a href="urlhere" target="_blank" style="font-weight: bold;text-decoration:none;color:#ffffff;padding: 10px 20px;display: block;font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;background-color: #25b625; border-radius: 10px;">
+                            <td class="base-button" height="53" align="center" style="border-radius: 12px;font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;font-weight: bold; color: #FFFFFF; padding: 3px 4px; background-color: #29c329;" bgcolor="#29c329">
+                               <a href="urlhere" target="_blank" style="font-weight: bold;text-decoration:none;color:#ffffff;padding: 10px 20px;display: block;font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;line-height:1.5;text-align:center;background-color: #29c329; border-radius: 12px;">
                                     ${t}
                                </a>
                             </td>
@@ -1225,93 +1225,93 @@ $1`),e=e.replace(/<p[^>]*>/gi,``).replace(/<\/p>/gi,``),e}removeStylesFromLists(
                  </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapRightSideImg(e){return e.replace(/i-r-s([\s\S]*?)i-r-s-e/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
               <tr>
-                <td align="left" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 15px; padding-top: 15px;">
+                <td align="left" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 15px; padding-top: 15px;">
                   <a align="right" href="urlhere" target="_blank" style="display: inline-block; float: right; width: 50%; max-width: 50%; margin-left: 18px; margin-bottom: 12px;">
                     <img alt="Preview" height="224"
                          align="right"
-                         src="https://alphaonest.com/"
+                         src="https://reagstr.com/"
                          style="border:0;display:inline-block;outline:none;text-decoration:none;height:auto;max-height: 224px;max-width: 100%; width: 100%;font-size:13px;object-fit: contain;"
                          width="250"/>
                   </a>
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapLeftSideImg(e){return e.replace(/i-l-s([\s\S]*?)i-l-s-e/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
               <tr>
-                <td align="left" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 16px; padding-top: 16px;">
+                <td align="left" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-bottom: 16px; padding-top: 16px;">
                   <a align="left" href="urlhere" target="_blank" style="display: inline-block; float: left; width: 50%; max-width: 50%; margin-right: 18px; margin-bottom: 12px;">
                     <img alt="Preview" height="224"
                          align="left"
-                         src="https://alphaonest.com/"
+                         src="https://reagstr.com/"
                          style="border:0;display:inline-block;outline:none;text-decoration:none;height:auto;max-height: 224px;max-width: 100%; width: 100%;font-size:13px;object-fit: contain;"
                          width="250"/>
                   </a>
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
               </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapSignatureImg(e){return e.replace(/sign-i([\s\S]*?)sign-i-e/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
                 <td class="image-block" align="left" style="padding-top: 16px; padding-bottom: 16px;">
                    <img alt="Signature" height="auto"
-                        src="https://alphaonest.com/"
+                        src="https://reagstr.com/"
                         style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:220px;max-width: 220px;font-size:13px;"
                         width="220"/>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapFooterBlock(e){return e.replace(/ftr-s([\s\S]*?)ftr-e/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 25px; padding-bottom: 15px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000; padding-top: 25px; padding-bottom: 15px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}wrapFooterCenterBlock(e){return e.replace(/ftr-c([\s\S]*?)ftr-c-e/gi,function(e,t){return`
-                    </div>
+                    </span>
                 </td>
             </tr>
             <tr>
-                <td align="center" style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 25px; padding-bottom: 15px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
+                <td align="center" style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000; padding-top: 25px; padding-bottom: 15px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:12px;font-style:normal;font-weight:normal;line-height:1.5;text-align:center;color:#000000;">
                     ${t}
-                  </div>
+                  </span>
                 </td>
             </tr>
             <tr>
-               <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                  <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+               <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                  <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
         `})}replaceTripleBrWithSingle(e){let t=`<br>
 `;return e=e.replace(/(<br\s*\/?>\s*)+(<\/(?:div|td|tr|table|span)>)/gi,`$2`),e=e.replace(/<\w+[^>]*>\s*<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>\s*<\/\w+>/gi,t),e=e.replace(/<\w+[^>]*>\s*<br\s*\/?>\s*<\/\w+>/gi,t),e=e.replace(/\s*<br\s*\/?>\s*<\/(\w+)>/gi,`</$1><br>`),e=e.replace(/(?:<br\s*\/?>\s*){3,}/gi,t),e}addBrAfterClosingP(e){return e=e.replace(/<br\s*\/?>/gi,``),e=e.replace(/<\/p>(?!\s*<\/li>)/gi,`</p>
 <br><br>
@@ -1319,26 +1319,26 @@ $1`),e=e.replace(/<p[^>]*>/gi,``).replace(/<\/p>/gi,``),e}removeStylesFromLists(
 $1`),e=e.replace(/<p[^>]*>/gi,``).replace(/<\/p>/gi,``),e}removeStylesFromLists(e){return e=e.replace(/<ol[^>]*style="[^"]*"[^>]*>/gi,`<ol>
 `),e=e.replace(/<ul[^>]*style="[^"]*"[^>]*>/gi,`<ul>
 `),e=e.replace(/<li[^>]*style="[^"]*"[^>]*>/gi,`<li>`),e=e.replace(/<\/li*>/gi,`</li>
-`),e}wrapTextInSpan(e,t){let n=1;return e=e.replace(/<img[^>]*>/gi,e=>{let r=e.match(/alt=["']([^"']*)["']/i);return`      </div>
+`),e}wrapTextInSpan(e,t){let n=1;return e=e.replace(/<img[^>]*>/gi,e=>{let r=e.match(/alt=["']([^"']*)["']/i);return`      </span>
                        </td>
                    </tr>
                    <tr>
-                       <td class="image-full-wrapper" align="center" style="padding-top: 16px; padding-bottom: 16px;">
+                       <td class="full-img-block" align="center" style="padding-top: 16px; padding-bottom: 16px;">
                            <a href="urlhere" target="_blank">
                                <img alt="${(r&&r[1]?r[1]:`video`).replace(/"/g,`&quot;`).trim()}" height="auto"
-                                   src="${this.generateDynamicImgSrc(n++,t)}"
-                                   style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 562px;font-size:13px;"
-                                   width="562"/>
+                                    src="${this.generateDynamicImgSrc(n++,t)}"
+                                    style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;max-width: 564px;font-size:12px;"
+                                    width="564"/>
                            </a>
                        </td>
                     </tr>
                     <tr>
-                       <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                            <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">`}),e=`<tr>
-                      <td style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
-                                <div style="font-family:Verdana, Geneva, Tahoma, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
+                       <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                            <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">`}),e=`<tr>
+                      <td style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;padding-top: 16px; padding-bottom: 16px;">
+                                <span style="font-family:'Noto Sans', Arial, Helvetica, sans-serif;font-size:18px;font-style:normal;font-weight:normal;line-height:1.5;text-align:left;color:#000000;">
                                     ${e}
-                                </div>
+                                </span>
                       </td>
                     </tr>`,e}cleanEmptyHtmlTags(e){return e=e.replace(/&nbsp;/g,` `),e=e.replace(/<b>\s*<\/b>/g,``),e=e.replace(/<li>\s*<\/li>/g,``),e=e.replace(/<br>\s*<br>\s*<br>\s*<br>/g,`<br><br>`),e=e.replace(/<br>\s*<br>\s*<br>/g,`<br><br>`),e=e.replace(/(<div[^>]*>)\s*<br><br>/gi,`$1`),e=e.replace(/<\/a>\s*<a[^>]*>/g,` `),e=e.replace(/<pre>/g,``),e=e.replace(/<a[^>]*>\s*<\/a>/g,` `),e=e.replace(/<b[^>]*>\s*<\/b>/g,` `),e=e.replace(/<u>\s*<\/u>/g,` `),e=e.replace(/<em[^>]*>\s*<\/em>/g,` `),e=e.replace(/<\/em>\s*<em[^>]*>/g,` `),e=e.replace(/<i[^>]*>\s*<\/i>/g,` `),e=e.replace(/<\/i>\s*<i[^>]*>/g,` `),e=e.replace(/<br><br>\s*<\/div>/g,`</div>`),e=e.replace(/(<div[^>]*>)\s*<\/a>/gi,`$1`),e=e.replace(/(<div[^>]*>)\s*<\/b>/gi,`$1`),e=e.replace(/<a[^>]*>\s*<\/div>/g,`</div>`),e=e.replace(/<b[^>]*>\s*<\/div>/g,`</div>`),e=e.replace(/<h1[^>]*>/gi,``).replace(/<\/h1>/gi,``),e=e.replace(/<h2[^>]*>/gi,``).replace(/<\/h2>/gi,``),e=e.replace(/<h3[^>]*>/gi,``).replace(/<\/h3>/gi,``),e=e.replace(/<h4[^>]*>/gi,``).replace(/<\/h4>/gi,``),e=e.replace(/<h5[^>]*>/gi,``).replace(/<\/h5>/gi,``),e=e.replace(/<h6[^>]*>/gi,``).replace(/<\/h6>/gi,``),e=e.replace(/<br><br>\s*<br><br>/g,`<br><br>`),e=e.replace(/<br><br>\s*<\/div>/g,`</div>`),e=e.replace(/(<div[^>]*>)\s*<br><br>/gi,`$1`),e=e.replace(/<br>\s*<\/div>/g,`</div>`),e=e.replace(/<div[^>]*>\s*<\/div>/g,``),e=e.replace(/<td[^>]*>\s*<\/td>/g,``),e=e.replace(/<tr[^>]*>\s*<\/tr>/g,``),e}wrapContentInFullTableStructure(e){return`
     <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 100%;">
