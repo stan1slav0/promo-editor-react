@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
+import { toast } from 'react-toastify'
 
 import { uploadImagesToS3 } from '../utils/s3Uploader'
 import { getBlobFromSrc, toJpeg600, injectMetadata } from '../utils/imageProcessor'
@@ -19,7 +20,6 @@ export default function FormatterCore({
   const [editorContent, setEditorContent] = useState('')
   const [htmlOutput, setHtmlOutput] = useState('')
   const [mjmlOutput, setMjmlOutput] = useState('')
-  const [logText, setLogText] = useState('')
   const [hasImages, setHasImages] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
@@ -29,10 +29,18 @@ export default function FormatterCore({
 
   const isAnalyzingRef = useRef(false)
   const observerRef = useRef(null)
+  const s3ToastIdRef = useRef(null)
 
   const isSyncingScroll = useRef(false)
   const isFirstRender = useRef(true)
   const supportsMJML = processor?.hasMJML !== false
+
+  const dismissS3ToastIfExist = () => {
+    if (s3ToastIdRef.current) {
+      toast.dismiss(s3ToastIdRef.current)
+      s3ToastIdRef.current = null
+    }
+  }
 
   const handleSyncScroll = (sourceRef) => {
     if (isSyncingScroll.current || !sourceRef.current) return
@@ -92,36 +100,31 @@ export default function FormatterCore({
   const updateImageCountLog = () => {
     if (!editorRef.current) return
     const imgs = editorRef.current.querySelectorAll('img')
-    const count = imgs.length
-
-    setHasImages(count > 0)
-
-    if (count === 0 && !isAnalyzingRef.current) {
-      setLogText('')
-    }
+    setHasImages(imgs.length > 0)
   }
 
   useEffect(() => {
     updateImageCountLog()
   }, [])
 
+  const prevS3EnabledRef = useRef(isS3Enabled)
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false
+      prevS3EnabledRef.current = isS3Enabled
       return
     }
 
-    if (isS3Enabled) {
-      setLogText('☁️ Auto-upload to S3 mode activated!<br>')
-    } else {
-      setLogText('💻 Download to PC mode activated!<br>')
+    if (prevS3EnabledRef.current !== isS3Enabled) {
+      if (isS3Enabled) {
+        toast.info('☁️ Auto-upload to S3 mode activated!', { autoClose: 2000 })
+      } else {
+        toast.info('💻 Download to PC mode activated!', { autoClose: 2000 })
+      }
+
+      prevS3EnabledRef.current = isS3Enabled
     }
-
-    const timer = setTimeout(() => {
-      updateImageCountLog()
-    }, 1500)
-
-    return () => clearTimeout(timer)
   }, [isS3Enabled])
 
   const getFormattedName = () => {
@@ -153,6 +156,7 @@ export default function FormatterCore({
         setMjmlOutput('')
       }
     } catch (err) {
+      console.error(err)
     }
   }
 
@@ -165,6 +169,8 @@ export default function FormatterCore({
 
     const observer = new MutationObserver(() => {
       if (isAnalyzingRef.current || !editorRef.current) return
+
+      dismissS3ToastIfExist()
 
       const html = editorRef.current.innerHTML
       setEditorContent(html)
@@ -190,6 +196,8 @@ export default function FormatterCore({
 
   const handleEditorInput = (e) => {
     if (isAnalyzingRef.current) return
+
+    dismissS3ToastIfExist()
 
     const currentHtml = e.currentTarget.innerHTML
     setEditorContent(currentHtml)
@@ -268,15 +276,18 @@ export default function FormatterCore({
       : 'Finance'
 
     if (isS3Enabled) {
-      const activeBtnFake = { textContent: formattedCategory }
-      const fakeLogEl = {
-        set innerHTML(val) { setLogText(val) },
-        get innerHTML() { return logText },
-        set textContent(val) { setLogText(val) },
-        get textContent() { return logText }
-      }
+      dismissS3ToastIfExist()
 
-      await uploadImagesToS3(imgs, formattedCategory, promoName, activeBtnFake, fakeLogEl)
+      const toastId = toast.loading('🚀 Initializing S3 Upload...')
+      s3ToastIdRef.current = toastId
+
+      await uploadImagesToS3(
+        imgs,
+        formattedCategory,
+        promoName,
+        activeCategory,
+        toastId
+      )
     } else {
       let index = 1
       let saved = 0
@@ -295,11 +306,10 @@ export default function FormatterCore({
         index++
         saved++
 
-        setLogText(`${saved}`)
-        await new Promise(r => setTimeout(r, 300))
+        await new Promise(r => setTimeout(r, 200))
       }
 
-      setLogText(`${saved > 1 ? saved + ' images' : saved + ' image'} saved to PC ✅<br>`)
+      toast.success(`💾 ${saved > 1 ? saved + ' images' : saved + ' image'} saved to PC!`, { autoClose: 3000 })
     }
   }
 
@@ -308,10 +318,12 @@ export default function FormatterCore({
       const { prettyHtml, formattedName } = await generateHTMLCode()
       const blob = new Blob([prettyHtml], { type: 'text/html;charset=utf-8' })
       saveAs(blob, `${formattedName}_html.html`)
+      toast.success('📄 HTML file downloaded!', { autoClose: 3000 })
+
       await processImages()
     } catch (err) {
-      console.error('Error during full HTML export:', err)
-      setLogText(`❌ Error: ${err.message}<br>`)
+      console.error('Error during HTML export:', err)
+      toast.error(`❌ Download HTML Error: ${err.message}`)
     }
   }
 
@@ -321,8 +333,10 @@ export default function FormatterCore({
       const { prettyMjml, formattedName } = await generateMJMLCode()
       const blob = new Blob([prettyMjml], { type: 'text/html;charset=utf-8' })
       saveAs(blob, `${formattedName}_mjml.html`)
+      toast.success('📧 MJML file downloaded!', { autoClose: 3000 })
     } catch (err) {
       console.error('Error exporting MJML:', err)
+      toast.error(`❌ MJML Error: ${err.message}`)
     }
   }
 
@@ -340,10 +354,12 @@ export default function FormatterCore({
         }
       }
 
+      toast.success('📦 HTML & MJML downloaded successfully!', { autoClose: 3000 })
+
       await processImages()
     } catch (err) {
       console.error('Error downloading all items:', err)
-      setLogText(`❌ Download ALL Error: ${err.message}<br>`)
+      toast.error(`❌ Download ALL Error: ${err.message}`)
     }
   }
 
@@ -352,7 +368,7 @@ export default function FormatterCore({
       await processImages()
     } catch (err) {
       console.error('Error processing images:', err)
-      setLogText(`❌ Image Error: ${err.message}<br>`)
+      toast.error(`❌ Image Download Error: ${err.message}`)
     }
   }
 
@@ -367,23 +383,22 @@ export default function FormatterCore({
     isAnalyzingRef.current = true
     setIsAnalyzing(true)
 
-    setLogText(`🤖 AI is analyzing ${imgs.length} image${imgs.length > 1 ? 's' : ''}...`)
+    const aiToastId = toast.loading(`🤖 AI starts analyzing ${imgs.length} image${imgs.length > 1 ? 's' : ''}...`)
 
     try {
-      const count = await generateAltTextsForImages(imgs, (statusMessage) => {
-        setLogText(`🤖 ${statusMessage}`)
-      })
+      await generateAltTextsForImages(imgs, aiToastId)
 
       if (editorRef.current) {
         setEditorContent(editorRef.current.innerHTML)
       }
-
-      const word = count === 1 ? 'image' : 'images'
-      setLogText(`✅ ${count} ${word} processed and ready!`)
-
     } catch (err) {
       console.error('AI Alt Generation failed:', err)
-      setLogText(`⚠️ AI Alt generation error: ${err.message}`)
+      toast.update(aiToastId, {
+        render: `⚠️ AI Error: ${err.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 4000
+      })
     } finally {
       isAnalyzingRef.current = false
       setIsAnalyzing(false)
@@ -641,17 +656,6 @@ export default function FormatterCore({
             </div>
           </div>
 
-        </div>
-
-        <div className="log-wrapper">
-          <div className="field-big" style={{ borderRadius: '16px' }}>
-            <div className="field-big__line"></div>
-            <div
-              id="log"
-              className="field-big__area log"
-              dangerouslySetInnerHTML={{ __html: logText }}
-            />
-          </div>
         </div>
 
       </div>

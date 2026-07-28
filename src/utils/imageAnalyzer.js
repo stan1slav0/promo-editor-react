@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify'
+
 const PROXY_URL = "https://small-fire-960e.pingo-mw2.workers.dev"
 
 async function imgToBase64(imgElement) {
@@ -22,7 +24,7 @@ async function imgToBase64(imgElement) {
   }
 }
 
-export async function generateAltTextsForImages(imgs, onProgress) {
+export async function generateAltTextsForImages(imgs, toastId) {
   let index = 1
 
   let licenseKey = localStorage.getItem('license_key')
@@ -32,6 +34,7 @@ export async function generateAltTextsForImages(imgs, onProgress) {
       localStorage.setItem('license_key', licenseKey.trim())
     } else {
       console.error('❌ AI Alt generation canceled: Missing License Key.')
+      if (toastId) toast.dismiss(toastId)
       return 0
     }
   }
@@ -45,8 +48,12 @@ export async function generateAltTextsForImages(imgs, onProgress) {
       continue
     }
 
-    if (onProgress) {
-      onProgress(`AI analyzing image ${index} of ${imgs.length}... 🤖`)
+    if (toastId) {
+      toast.update(toastId, {
+        render: `🤖 AI analyzing image ${index} of ${imgs.length}...`,
+        type: 'info',
+        isLoading: true
+      })
     }
 
     const base64 = await imgToBase64(img)
@@ -85,12 +92,23 @@ export async function generateAltTextsForImages(imgs, onProgress) {
     } catch (err) {
       console.error(`❌ [Image ${index}/${imgs.length}] Error during AI generation:`, err)
     } finally {
-      // Маркер ставится В ЛЮБОМ СЛУЧАЕ, чтобы не крутить по второму разу
       img.setAttribute('data-ai-analyzed', 'true')
       processedCount++
     }
 
     index++
+  }
+
+  if (toastId && processedCount > 0) {
+    const word = processedCount === 1 ? 'image' : 'images'
+    toast.update(toastId, {
+      render: `✅ AI finished! ${processedCount} ${word} processed.`,
+      type: 'success',
+      isLoading: false,
+      autoClose: 3000
+    })
+  } else if (toastId) {
+    toast.dismiss(toastId)
   }
 
   return processedCount

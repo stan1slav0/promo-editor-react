@@ -6,6 +6,9 @@ import { getProcessor } from './processors'
 import BackgroundCanvas from './components/BackgroundCanvas'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
 const PAGES = [
   { id: 'finance', title: 'Finance', path: '/', categories: ['Finance', 'Health', 'Pets'] },
   { id: 'alpha', title: 'Alpha', path: '/alpha', categories: ['Alpha'] },
@@ -172,6 +175,19 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark" // Можно меня на "light" или "colored"
+        />
       </MainLayout>
     </BrowserRouter>
   )

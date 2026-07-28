@@ -1,20 +1,35 @@
+import React from 'react'
+import { toast } from 'react-toastify'
 import { getBlobFromSrc, toJpeg600, injectMetadata } from './imageProcessor'
 
 const PROXY_URL = "https://small-fire-960e.pingo-mw2.workers.dev/"
 
-export async function uploadImagesToS3(imgs, categoryText, folderName, activeCategoryBtn, logEl) {
+export async function uploadImagesToS3(imgs, categoryText, folderName, activeCategoryBtn, toastId) {
   const letters = folderName.replace(/[^a-zA-Z]/g, '').toLowerCase()
   const digits = folderName.replace(/[^0-9]/g, '')
 
   if (!letters || !digits) {
-    logEl.innerHTML = '❌ S3 Error: Invalid folder format (Requires letters and numbers, e.g., ABCD 123)<br>'
+    if (toastId) {
+      toast.update(toastId, {
+        render: '❌ S3 Error: Invalid folder format (Requires letters and numbers, e.g., ABCD 123)',
+        type: 'error',
+        isLoading: false,
+        autoClose: 5000
+      })
+    }
     return
   }
 
   const totalCount = imgs.length
   const totalWord = totalCount === 1 ? 'image' : 'images'
 
-  logEl.innerHTML = `🚀 S3 Auto-Upload Mode: sending ${totalCount} ${totalWord}...`
+  if (toastId) {
+    toast.update(toastId, {
+      render: `🚀 S3 Auto-Upload Mode: sending ${totalCount} ${totalWord}...`,
+      type: 'info',
+      isLoading: true
+    })
+  }
 
   let index = 1
   let uploadedCount = 0
@@ -25,13 +40,17 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
     const src = img.getAttribute('src')
     if (!src) continue
 
-    logEl.innerHTML = `⚙️ Processing image ${index} of ${totalCount}...`
+    if (toastId) {
+      toast.update(toastId, {
+        render: `⚙️ Processing image ${index} of ${totalCount}...`,
+        type: 'info',
+        isLoading: true
+      })
+    }
 
     const blob = await getBlobFromSrc(src)
     if (!blob) {
-      logEl.innerHTML = `❌ Failed to download source image ${index}`
       index++
-      await new Promise(r => setTimeout(r, 1000))
       continue
     }
 
@@ -40,11 +59,17 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
 
     const fileName = `img-${index}.jpg`
 
-    logEl.innerHTML = `📤 Uploading image ${index} of ${totalCount}...`
+    if (toastId) {
+      toast.update(toastId, {
+        render: `📤 Uploading image ${index} of ${totalCount}...`,
+        type: 'info',
+        isLoading: true
+      })
+    }
 
     let apiPath = ''
     let parentParam = 'global'
-    const currentCat = categoryText.toLowerCase()
+    const currentCat = (categoryText || '').toLowerCase()
 
     if (currentCat === 'alpha') {
       parentParam = 'alpha'
@@ -76,7 +101,6 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
     const apiUrl = `${PROXY_URL}?url=${encodeURIComponent(originalApiUrl)}`
 
     try {
-
       let licenseKey = localStorage.getItem('license_key')
 
       if (!licenseKey || !licenseKey.trim()) {
@@ -84,7 +108,14 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
         if (licenseKey && licenseKey.trim()) {
           localStorage.setItem('license_key', licenseKey.trim())
         } else {
-          logEl.innerHTML = '❌ No License Key.<br>'
+          if (toastId) {
+            toast.update(toastId, {
+              render: '❌ No License Key provided.',
+              type: 'error',
+              isLoading: false,
+              autoClose: 4000
+            })
+          }
           return
         }
       }
@@ -111,24 +142,66 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
       }
 
     } catch (err) {
-      logEl.innerHTML = `❌ Image ${index} upload failed: ${err.message}`
-      await new Promise(r => setTimeout(r, 1500))
+      console.error('S3 Upload error:', err)
     }
 
     index++
-    await new Promise(r => setTimeout(r, 200))
+    await new Promise(r => setTimeout(r, 300))
   }
 
   const upWord = uploadedCount === 1 ? 'image' : 'images'
   const exWord = existsCount === 1 ? 'image' : 'images'
 
+  let statusText = ''
+  let statusType = 'success'
+
   if (uploadedCount > 0 && existsCount === 0) {
-    logEl.innerHTML = `✅ Successfully uploaded ${uploadedCount} ${upWord}! <a href="${generatedBrowserUrl}" target="_blank" class="output_button_folder">📂 Open S3 Folder</a>`
+    statusText = `✅ Successfully uploaded ${uploadedCount} ${upWord}!`
   } else if (uploadedCount === 0 && existsCount > 0) {
-    logEl.innerHTML = `⚠️ All ${existsCount} ${exWord} already exist on server. <a href="${generatedBrowserUrl}" target="_blank" class="output_button_folder">📂 Open S3 Folder</a>`
+    statusText = `⚠️ All ${existsCount} ${exWord} already exist on server.`
+    statusType = 'warning'
   } else if (uploadedCount > 0 && existsCount > 0) {
-    logEl.innerHTML = `✅ Uploaded: ${uploadedCount} ${upWord} | ⚠️ Already exists: ${existsCount} ${exWord} <a href="${generatedBrowserUrl}" target="_blank" class="output_button_folder">📂 Open S3 Folder</a>`
+    statusText = `✅ Uploaded: ${uploadedCount} ${upWord} | ⚠️ Exist: ${existsCount} ${exWord}`
   } else {
-    logEl.innerHTML = `❌ S3 Upload failed.`
+    statusText = `❌ S3 Upload failed.`
+    statusType = 'error'
+  }
+
+  // Финальный всплывающий тост — НЕ закрывается автоматически
+  if (toastId) {
+    toast.update(toastId, {
+      render: () =>
+        React.createElement(
+          'div',
+          { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+          React.createElement('span', null, statusText),
+          generatedBrowserUrl &&
+          React.createElement(
+            'a',
+            {
+              href: generatedBrowserUrl,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: {
+                display: 'inline-block',
+                padding: '8px 12px',
+                backgroundColor: '#3b82f6',
+                color: '#ffffff',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                marginTop: '4px'
+              }
+            },
+            '📂 Open S3 Folder'
+          )
+        ),
+      type: statusType,
+      isLoading: false,
+      autoClose: false, // 🔒 Закрывается только пользователем или при правке DOM
+      closeOnClick: false
+    })
   }
 }
