@@ -123,7 +123,7 @@ export default function FormatterCore({
   }, [isS3Enabled])
 
   const getFormattedName = () => {
-    const raw = fileName.trim() || 'PROMO'
+    const raw = fileName.trim() || ''
     return raw.replace(/\s+/g, '').toUpperCase()
   }
 
@@ -204,6 +204,20 @@ export default function FormatterCore({
     } else if (!fileName) {
       setFileName('PROMO1')
     }
+  }
+
+  const handlePaste = () => {
+    setTimeout(() => {
+      isSyncingScroll.current = true
+
+      if (editorRef.current) editorRef.current.scrollTop = 0
+      if (htmlOutputRef.current) htmlOutputRef.current.scrollTop = 0
+      if (mjmlOutputRef.current) mjmlOutputRef.current.scrollTop = 0
+
+      requestAnimationFrame(() => {
+        isSyncingScroll.current = false
+      })
+    }, 10)
   }
 
   const getRawContent = () => {
@@ -430,6 +444,7 @@ export default function FormatterCore({
                   id="editor"
                   className="field-big__area field-big__area_main primary-text-editor-block"
                   contentEditable="true"
+                  onPaste={handlePaste}
                   onInput={handleEditorInput}
                   onScroll={() => handleSyncScroll(editorRef)}
                   suppressContentEditableWarning={true}
@@ -488,6 +503,7 @@ export default function FormatterCore({
                 </AnimatePresence>
 
                 <button type="button" id="btn-download" className="main-btn main-btn_marg main-btn_icon primary-button" title="Download images" onClick={handleDownloadImagesOnly} disabled={isAnalyzing} style={{
+                  display: hasImages ? 'flex' : 'none',
                   opacity: isAnalyzing ? 0.6 : 1,
                   cursor: isAnalyzing ? 'not-allowed' : 'pointer',
                 }}>
@@ -501,14 +517,14 @@ export default function FormatterCore({
                   </span>
                 </button>
 
-                <button type="button" id="exportAll" className="main-btn main-btn_icon primary-button" title="Export code" onClick={handleExportAll}>
+                {/* <button type="button" id="exportAll" className="main-btn main-btn_icon primary-button" title="Export code" onClick={handleExportAll}>
                   <span>
                     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22.6826 4.19116H11.5078C12.6469 4.85959 13.6286 5.75735 14.3979 6.82032H22.6826C23.0617 6.82032 23.3708 7.1292 23.3708 7.50835V20.0816C23.3708 20.4609 23.0618 20.7698 22.6826 20.7698H10.1093C9.73013 20.7698 9.4212 20.4609 9.4212 20.0816V11.7045C9.10369 11.5412 8.77163 11.4035 8.42841 11.2972C8.22727 11.917 7.79069 12.445 7.18995 12.7608C7.06404 12.8267 6.92723 12.8669 6.79199 12.9106V20.0817C6.79199 21.9106 8.28027 23.3991 10.1093 23.3991H22.6826C24.5116 23.3991 25.9999 21.9106 25.9999 20.0817V7.50835C25.9999 5.67944 24.5117 4.19116 22.6826 4.19116Z" />
                       <path d="M6.79796 9.27152C9.50683 9.33653 11.8759 10.7615 13.2384 12.8995C13.3633 13.0947 13.5773 13.2076 13.7998 13.2076C13.8605 13.2076 13.9221 13.199 13.9821 13.182C14.2654 13.1006 14.4622 12.8439 14.4657 12.5495C14.4657 12.5229 14.4657 12.4963 14.4657 12.4699C14.4657 8.19486 11.0491 4.72441 6.79896 4.62253V3.37986C6.79896 3.09053 6.63891 2.82606 6.38388 2.69088C6.27009 2.63088 6.14507 2.60095 6.02095 2.60095C5.86607 2.60095 5.71287 2.64731 5.58106 2.73708L0.302981 6.34961C0.113904 6.47889 0.000953601 6.69283 5.32083e-06 6.92216C-0.000890277 7.1507 0.111323 7.36564 0.299609 7.4965L5.57679 11.1553C5.70944 11.2477 5.86438 11.2939 6.02006 11.2939C6.14412 11.2939 6.26745 11.2648 6.3813 11.2056C6.63707 11.0714 6.79796 10.8053 6.79796 10.5159V9.27152Z" />
                     </svg>
                   </span>
-                </button>
+                </button> */}
 
               </div>
 

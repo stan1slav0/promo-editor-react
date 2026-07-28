@@ -7,7 +7,7 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
   const digits = folderName.replace(/[^0-9]/g, '')
 
   if (!letters || !digits) {
-    logEl.innerHTML = '❌ S3 Error: Invalid folder format (Requires letters and numbers, e.g., SBJC123)<br>'
+    logEl.innerHTML = '❌ S3 Error: Invalid folder format (Requires letters and numbers, e.g., ABCD 123)<br>'
     return
   }
 
