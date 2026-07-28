@@ -351,7 +351,9 @@ export default function FormatterCore({
       const { prettyHtml, formattedName } = await generateHTMLCode()
       const blob = new Blob([prettyHtml], { type: 'text/html;charset=utf-8' })
       saveAs(blob, `${formattedName}_html.html`)
-      toast.success('📄 HTML file downloaded!', { autoClose: 3000 })
+      toast.success(<span>
+        <strong>{formattedName}</strong> downloaded
+      </span>, { autoClose: 3000 })
 
       await processImages()
     } catch (err) {
@@ -387,12 +389,20 @@ export default function FormatterCore({
         }
       }
 
-      toast.success('📦 HTML & MJML downloaded successfully!', { autoClose: 3000 })
-
+      toast.success(
+        <span>
+          <strong>{formattedName}</strong>
+          <br />
+          HTML & MJML downloaded
+        </span>,
+        {
+          autoClose: 3000
+        }
+      )
       await processImages()
     } catch (err) {
       console.error('Error downloading all items:', err)
-      toast.error(`❌ Download ALL Error: ${err.message}`)
+      toast.error(`${err.message}`)
     }
   }
 

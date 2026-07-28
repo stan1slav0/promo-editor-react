@@ -11,7 +11,7 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
   if (!letters || !digits) {
     if (toastId) {
       toast.update(toastId, {
-        render: '❌ S3 Error: Invalid folder format (Requires letters and numbers, e.g., ABCD 123)',
+        render: 'Invalid folder format',
         type: 'error',
         isLoading: false,
         autoClose: 5000

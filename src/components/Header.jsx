@@ -80,6 +80,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
           alignItems: 'center',
           padding: '15px 30px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
         }}
       >
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', width: '300px' }}>
@@ -147,9 +148,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
         </div>
 
         <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
-            ☁️ S3 Storage Mode:
-          </span>
           <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', margin: 0 }}>
             <input
               type="checkbox"
@@ -176,7 +174,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
                   display: 'inline-block',
                 }}
               >
-                {isS3Enabled ? 'Storage Upload' : 'Download to PC'}
+                {isS3Enabled ? 'Storage' : 'Desktop'}
               </motion.span>
             </AnimatePresence>
           </div>

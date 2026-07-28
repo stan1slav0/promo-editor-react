@@ -177,16 +177,16 @@ export default function App() {
         </Routes>
 
         <ToastContainer
-          position="bottom-right"
+          position="top-right"
           autoClose={3000}
           hideProgressBar={false}
-          newestOnTop={false}
+          newestOnTop={true}
           closeOnClick
           rtl={false}
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="dark" // Можно меня на "light" или "colored"
+          theme="dark"
         />
       </MainLayout>
     </BrowserRouter>

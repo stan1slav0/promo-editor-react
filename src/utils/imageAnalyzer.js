@@ -105,7 +105,7 @@ export async function generateAltTextsForImages(imgs, toastId) {
       render: `${processedCount} ${word} ready for upload.`,
       type: 'success',
       isLoading: false,
-      autoClose: 5000,
+      autoClose: 3000,
       closeOnClick: false,
       closeButton: false
     })

@@ -102,15 +102,15 @@ input[type=number] {
 }
 
 .main-wrapper.bg-alpha {
-  background: linear-gradient(108deg, #0e9a90 0%, #0d4d49 50%, #0a4850 100%)
+  background: linear-gradient(to left, #01111e, #002E5D);
 }
 
 .main-wrapper.bg-organic {
-  background: linear-gradient(108deg, #032703 0%, #063003 50%, #1a500a 100%);
+  background: linear-gradient(to left, #041e01, #0a4e0a);
 }
 
 .main-wrapper.bg-red {
-  background: linear-gradient(108deg, #9a0e0e 0%, #4d0d0d 50%, #500a2c 100%)
+  background: linear-gradient(to left, #190A05, #5a0505);
 }
 
 .code-buttons-wrapper {
@@ -788,11 +788,8 @@ input[type=number] {
   align-items: center;
   gap: 12px;
   padding: 10px 15px;
-  background: rgba(124, 58, 237, 0.08);
-  border-radius: 8px;
-  border: 1px dashed #7c3aed;
   width: fit-content;
-  min-width: 320px;
+  min-width: 150px;
 }
 
 .slider {
@@ -808,7 +805,7 @@ input[type=number] {
 } */
 
 .switch input:checked+.slider:before {
-  background-color: #d357d8;
+  background-color: #ffffff;
 }
 
 .slider:before {
@@ -818,7 +815,7 @@ input[type=number] {
   width: 18px;
   left: 3px;
   bottom: 2px;
-  background-color: #75eaf6;
+  background-color: #cccccc;
   transition: 0.3s;
   border-radius: 50%;
 }
