@@ -146,7 +146,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
         </div>
 
         <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontFamily: "'Roboto', Arial, sans-serif", fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
+          <span style={{ fontSize: '14px', fontWeight: 500, color: '#ffffff' }}>
             ☁️ S3 Storage Mode:
           </span>
           <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', margin: 0 }}>
@@ -169,7 +169,6 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
                 style={{
-                  fontFamily: "'Roboto', Arial, sans-serif",
                   fontSize: '13px',
                   fontWeight: 600,
                   color: isS3Enabled ? '#d357d8' : '#75eaf6',

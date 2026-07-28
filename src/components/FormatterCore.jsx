@@ -34,7 +34,6 @@ export default function FormatterCore({
   const isFirstRender = useRef(true)
   const supportsMJML = processor?.hasMJML !== false
 
-
   const handleSyncScroll = (sourceRef) => {
     if (isSyncingScroll.current || !sourceRef.current) return
 
@@ -49,7 +48,6 @@ export default function FormatterCore({
     }
 
     const scrollPercentage = source.scrollTop / maxScroll
-
     const targets = [editorRef, htmlOutputRef, mjmlOutputRef]
 
     targets.forEach((targetRef) => {
@@ -328,14 +326,24 @@ export default function FormatterCore({
     }
   }
 
-  const handleExportAll = async () => {
+  const handleDownloadAll = async () => {
     try {
-      await generateHTMLCode()
+      const { prettyHtml, formattedName } = await generateHTMLCode()
+      const htmlBlob = new Blob([prettyHtml], { type: 'text/html;charset=utf-8' })
+      saveAs(htmlBlob, `${formattedName}_html.html`)
+
       if (supportsMJML) {
-        await generateMJMLCode()
+        const { prettyMjml } = await generateMJMLCode()
+        if (prettyMjml) {
+          const mjmlBlob = new Blob([prettyMjml], { type: 'text/html;charset=utf-8' })
+          saveAs(mjmlBlob, `${formattedName}_mjml.html`)
+        }
       }
+
+      await processImages()
     } catch (err) {
-      console.error('Error exporting code:', err)
+      console.error('Error downloading all items:', err)
+      setLogText(`❌ Download ALL Error: ${err.message}<br>`)
     }
   }
 
@@ -468,10 +476,43 @@ export default function FormatterCore({
 
               <div className="code-buttons-wrapper">
 
-                <button disabled={isAnalyzing} type="button" id="downloadBtn" className="main-btn primary-button" title="Download HTML" onClick={handleFullDownloadHTML} style={{
-                  opacity: isAnalyzing ? 0.6 : 1,
-                  cursor: isAnalyzing ? 'not-allowed' : 'pointer',
-                }}>
+                {activeCategory?.toLowerCase() === 'finance' && (
+                  <button
+                    disabled={isAnalyzing}
+                    type="button"
+                    id="downloadAllBtn"
+                    className="main-btn primary-button"
+                    title="Download HTML, MJML & Images"
+                    onClick={handleDownloadAll}
+                    style={{
+                      opacity: isAnalyzing ? 0.6 : 1,
+                      cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <span>
+                      {isAnalyzing ? 'Analyzing...' : 'Download ALL'}
+                      <svg width="26" height="26" viewBox="0 0 26 26" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.94 15.86V22.898C4.9496 23.4582 5.40158 23.9103 5.9614 23.9198L5.9795 23.92H16.2538L20.54 19.6338V15.86H22.1V20.28L16.9 25.48H5.9795C4.55803 25.48 3.4033 24.3391 3.38035 22.923L3.38 22.88V15.86H4.94ZM20.228 18.72L15.548 23.4V18.72H20.228ZM19.5005 0C20.922 0 22.0767 1.14087 22.0997 2.55695L22.1 2.59995V3.38H22.88C24.3159 3.38 25.48 4.54406 25.48 5.98V11.7C25.48 13.1359 24.3159 14.3 22.88 14.3H2.6C1.16406 14.3 0 13.1359 0 11.7V5.98C0 4.54406 1.16406 3.38 2.6 3.38H3.38V2.59995C3.38 1.17876 4.52067 0.0233153 5.93651 0.000348427L5.9795 0H19.5005ZM22.88 4.94H2.6C2.03161 4.94 1.56971 5.39597 1.56 5.96209V11.7C1.56 12.2684 2.01597 12.7303 2.58209 12.7398L2.6 12.74H22.88C23.4484 23.74 23.9103 12.284 23.92 11.7179V5.98C23.92 5.41161 23.464 4.94971 22.8979 4.94015L22.88 4.94ZM19.5005 1.56H5.9616C5.40199 1.56961 4.94971 2.02195 4.94 2.58185V2.59995V3.38H20.54V2.58203C20.5303 2.01582 20.0686 1.56 19.5005 1.56Z" />
+                        <path d="M7.7 5.98H9.1L11.05 11.18H9.85L9.4 9.9H7.4L6.95 11.18H5.75L7.7 5.98ZM7.8 8.85H9.00L8.4 7.15L7.8 8.85Z" />
+                        <path d="M12.6 5.98V10.15H14.8V11.18H11.4V5.98H12.6Z" />
+                        <path d="M16.4 5.98V10.15H18.6V11.18H15.2V5.98H16.4Z" />
+                      </svg>
+                    </span>
+                  </button>
+                )}
+
+                <button
+                  disabled={isAnalyzing}
+                  type="button"
+                  id="downloadBtn"
+                  className="main-btn primary-button"
+                  title="Download HTML"
+                  onClick={handleFullDownloadHTML}
+                  style={{
+                    opacity: isAnalyzing ? 0.6 : 1,
+                    cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                  }}
+                >
                   <span>
                     {isAnalyzing ? 'Analyzing...' : 'Download'}
                     <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
@@ -512,11 +553,19 @@ export default function FormatterCore({
                   )}
                 </AnimatePresence>
 
-                <button type="button" id="btn-download" className="main-btn main-btn_marg main-btn_icon primary-button" title="Download images" onClick={handleDownloadImagesOnly} disabled={isAnalyzing} style={{
-                  display: hasImages ? 'flex' : 'none',
-                  opacity: isAnalyzing ? 0.6 : 1,
-                  cursor: isAnalyzing ? 'not-allowed' : 'pointer',
-                }}>
+                <button
+                  type="button"
+                  id="btn-download"
+                  className="main-btn main-btn_marg main-btn_icon primary-button"
+                  title="Download images"
+                  onClick={handleDownloadImagesOnly}
+                  disabled={isAnalyzing}
+                  style={{
+                    display: hasImages ? 'flex' : 'none',
+                    opacity: isAnalyzing ? 0.6 : 1,
+                    cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                  }}
+                >
                   <span>
                     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M23 24H3C2.20435 24 1.44129 23.6839 0.87868 23.1213C0.316071 22.5587 0 21.7956 0 21V5C0 4.20435 0.316071 3.44129 0.87868 2.87868C1.44129 2.31607 2.20435 2 3 2H23C23.7956 2 24.5587 2.31607 25.1213 2.87868C25.6839 3.44129 26 4.20435 26 5V21C26 21.7956 25.6839 22.5587 25.1213 23.1213C24.5587 23.6839 23.7956 24 23 24ZM3 4C2.73478 4 2.48043 4.10536 2.29289 4.29289C2.10536 4.48043 2 4.73478 2 5V21C2 21.2652 2.10536 21.5196 2.29289 21.7071C2.48043 21.8946 2.73478 22 3 22H23C23.2652 22 23.5196 21.8946 23.7071 21.7071C23.8946 21.5196 24 21.2652 24 21V5C24 4.73478 23.8946 4.48043 23.7071 4.29289C23.5196 4.10536 23.2652 4 23 4H3Z" />
@@ -526,15 +575,6 @@ export default function FormatterCore({
                     </svg>
                   </span>
                 </button>
-
-                {/* <button type="button" id="exportAll" className="main-btn main-btn_icon primary-button" title="Export code" onClick={handleExportAll}>
-                  <span>
-                    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22.6826 4.19116H11.5078C12.6469 4.85959 13.6286 5.75735 14.3979 6.82032H22.6826C23.0617 6.82032 23.3708 7.1292 23.3708 7.50835V20.0816C23.3708 20.4609 23.0618 20.7698 22.6826 20.7698H10.1093C9.73013 20.7698 9.4212 20.4609 9.4212 20.0816V11.7045C9.10369 11.5412 8.77163 11.4035 8.42841 11.2972C8.22727 11.917 7.79069 12.445 7.18995 12.7608C7.06404 12.8267 6.92723 12.8669 6.79199 12.9106V20.0817C6.79199 21.9106 8.28027 23.3991 10.1093 23.3991H22.6826C24.5116 23.3991 25.9999 21.9106 25.9999 20.0817V7.50835C25.9999 5.67944 24.5117 4.19116 22.6826 4.19116Z" />
-                      <path d="M6.79796 9.27152C9.50683 9.33653 11.8759 10.7615 13.2384 12.8995C13.3633 13.0947 13.5773 13.2076 13.7998 13.2076C13.8605 13.2076 13.9221 13.199 13.9821 13.182C14.2654 13.1006 14.4622 12.8439 14.4657 12.5495C14.4657 12.5229 14.4657 12.4963 14.4657 12.4699C14.4657 8.19486 11.0491 4.72441 6.79896 4.62253V3.37986C6.79896 3.09053 6.63891 2.82606 6.38388 2.69088C6.27009 2.63088 6.14507 2.60095 6.02095 2.60095C5.86607 2.60095 5.71287 2.64731 5.58106 2.73708L0.302981 6.34961C0.113904 6.47889 0.000953601 6.69283 5.32083e-06 6.92216C-0.000890277 7.1507 0.111323 7.36564 0.299609 7.4965L5.57679 11.1553C5.70944 11.2477 5.86438 11.2939 6.02006 11.2939C6.14412 11.2939 6.26745 11.2648 6.3813 11.2056C6.63707 11.0714 6.79796 10.8053 6.79796 10.5159V9.27152Z" />
-                    </svg>
-                  </span>
-                </button> */}
 
               </div>
 
