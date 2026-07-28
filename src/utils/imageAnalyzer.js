@@ -32,16 +32,15 @@ export async function generateAltTextsForImages(imgs, onProgress) {
       localStorage.setItem('license_key', licenseKey.trim())
     } else {
       console.error('❌ AI Alt generation canceled: Missing License Key.')
-      return
+      return 0
     }
   }
 
   const concisePrompt = "Describe this image in 3 to 7 words for an HTML alt tag. Be extremely concise, direct, and omit words like 'image of' or 'picture of'."
+  let processedCount = 0
 
   for (const img of imgs) {
-    const currentAlt = img.getAttribute('alt')
-
-    if (currentAlt && currentAlt.trim() !== '') {
+    if (img.getAttribute('data-ai-analyzed') === 'true') {
       index++
       continue
     }
@@ -52,6 +51,7 @@ export async function generateAltTextsForImages(imgs, onProgress) {
 
     const base64 = await imgToBase64(img)
     if (!base64) {
+      img.setAttribute('data-ai-analyzed', 'true')
       index++
       continue
     }
@@ -73,9 +73,7 @@ export async function generateAltTextsForImages(imgs, onProgress) {
         const data = await res.json()
         if (data.alt) {
           let cleanAlt = data.alt.trim()
-
           cleanAlt = cleanAlt.replace(/^["']|["']$/g, '')
-
           cleanAlt = cleanAlt.replace(/"/g, '&quot;')
 
           img.setAttribute('alt', cleanAlt)
@@ -86,8 +84,14 @@ export async function generateAltTextsForImages(imgs, onProgress) {
       }
     } catch (err) {
       console.error(`❌ [Image ${index}/${imgs.length}] Error during AI generation:`, err)
+    } finally {
+      // Маркер ставится В ЛЮБОМ СЛУЧАЕ, чтобы не крутить по второму разу
+      img.setAttribute('data-ai-analyzed', 'true')
+      processedCount++
     }
 
     index++
   }
+
+  return processedCount
 }

@@ -1,11 +1,11 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useVpnRegion } from '../hooks/useVpnRegion'
+// import { useVpnRegion } from '../hooks/useVpnRegion'
 
 
 export default function Header({ isS3Enabled, onS3ToggleChange }) {
-  const { country, isUS, isInitialLoading, isRefreshing, refreshRegion } = useVpnRegion()
+  // const { country, isUS, isInitialLoading, isRefreshing, refreshRegion } = useVpnRegion()
   const location = useLocation()
 
   const getSingleTab = () => {
@@ -27,7 +27,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
 
   return (
     <>
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {isInitialLoading && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -71,7 +71,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
             </span>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <header
         style={{
@@ -84,33 +84,33 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
       >
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px' }}>
-            {!isInitialLoading && (
-              <button
-                type="button"
-                className="main-btn main-btn_noicon category-wrap__link _active"
+            {/* {!isInitialLoading && ( */}
+            <button
+              type="button"
+              className="main-btn main-btn_noicon category-wrap__link _active"
+              style={{
+                position: 'relative',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: 'default',
+                background: 'transparent',
+              }}
+            >
+              <motion.div
+                layoutId="activeHeaderTab"
                 style={{
-                  position: 'relative',
-                  fontSize: '15px',
-                  fontWeight: 'bold',
-                  cursor: 'default',
-                  background: 'transparent',
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 0,
+                  pointerEvents: 'none',
                 }}
-              >
-                <motion.div
-                  layoutId="activeHeaderTab"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 0,
-                    pointerEvents: 'none',
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-                <span style={{ position: 'relative', zIndex: 1 }}>{currentTab.title}</span>
-              </button>
-            )}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              />
+              <span style={{ position: 'relative', zIndex: 1 }}>{currentTab.title}</span>
+            </button>
+            {/* )} */}
           </div>
-
+          {/* 
           <div
             style={{
               fontSize: '12px',
@@ -142,7 +142,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
             >
               🔄
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

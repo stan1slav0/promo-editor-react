@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
+
 import { uploadImagesToS3 } from '../utils/s3Uploader'
 import { getBlobFromSrc, toJpeg600, injectMetadata } from '../utils/imageProcessor'
 import { generateAltTextsForImages } from '../utils/imageAnalyzer'
@@ -25,6 +26,9 @@ export default function FormatterCore({
   const editorRef = useRef(null)
   const htmlOutputRef = useRef(null)
   const mjmlOutputRef = useRef(null)
+
+  const isAnalyzingRef = useRef(false)
+  const observerRef = useRef(null)
 
   const isSyncingScroll = useRef(false)
   const isFirstRender = useRef(true)
@@ -94,7 +98,7 @@ export default function FormatterCore({
 
     setHasImages(count > 0)
 
-    if (count === 0 && !isAnalyzing) {
+    if (count === 0 && !isAnalyzingRef.current) {
       setLogText('')
     }
   }
@@ -162,16 +166,16 @@ export default function FormatterCore({
     if (!editorRef.current) return
 
     const observer = new MutationObserver(() => {
-      if (editorRef.current) {
-        const html = editorRef.current.innerHTML
-        setEditorContent(html)
-        updateImageCountLog()
+      if (isAnalyzingRef.current || !editorRef.current) return
 
-        clearTimeout(window.altTimeout)
-        window.altTimeout = setTimeout(() => {
-          analyzeEditorImages()
-        }, 800)
-      }
+      const html = editorRef.current.innerHTML
+      setEditorContent(html)
+      updateImageCountLog()
+
+      clearTimeout(window.altTimeout)
+      window.altTimeout = setTimeout(() => {
+        analyzeEditorImages()
+      }, 800)
     })
 
     observer.observe(editorRef.current, {
@@ -181,10 +185,14 @@ export default function FormatterCore({
       attributes: true
     })
 
+    observerRef.current = observer
+
     return () => observer.disconnect()
   }, [])
 
   const handleEditorInput = (e) => {
+    if (isAnalyzingRef.current) return
+
     const currentHtml = e.currentTarget.innerHTML
     setEditorContent(currentHtml)
     updateImageCountLog()
@@ -341,33 +349,35 @@ export default function FormatterCore({
   }
 
   const analyzeEditorImages = async () => {
-    if (!editorRef.current) return
+    if (!editorRef.current || isAnalyzingRef.current) return
 
     const imgs = Array.from(editorRef.current.querySelectorAll('img'))
-    const pendingImgs = imgs.filter(img => !img.getAttribute('alt') || img.getAttribute('alt').trim() === '')
+      .filter(img => img.getAttribute('data-ai-analyzed') !== 'true')
 
-    if (pendingImgs.length === 0) return
+    if (imgs.length === 0) return
 
+    isAnalyzingRef.current = true
     setIsAnalyzing(true)
-    setLogText(`🤖 AI is analyzing ${pendingImgs.length} image${pendingImgs.length > 1 ? 's' : ''}...`)
 
-    await new Promise(resolve => setTimeout(resolve, 0))
+    setLogText(`🤖 AI is analyzing ${imgs.length} image${imgs.length > 1 ? 's' : ''}...`)
 
     try {
-      await generateAltTextsForImages(pendingImgs, (statusMessage) => {
+      const count = await generateAltTextsForImages(imgs, (statusMessage) => {
         setLogText(`🤖 ${statusMessage}`)
       })
 
-      const updatedHtml = editorRef.current.innerHTML
-      setEditorContent(updatedHtml)
+      if (editorRef.current) {
+        setEditorContent(editorRef.current.innerHTML)
+      }
 
-      const word = pendingImgs.length === 1 ? 'image' : 'images'
-      setLogText(`✅ ${pendingImgs.length} ${word} processed and ready!`)
+      const word = count === 1 ? 'image' : 'images'
+      setLogText(`✅ ${count} ${word} processed and ready!`)
 
     } catch (err) {
       console.error('AI Alt Generation failed:', err)
       setLogText(`⚠️ AI Alt generation error: ${err.message}`)
     } finally {
+      isAnalyzingRef.current = false
       setIsAnalyzing(false)
     }
   }
