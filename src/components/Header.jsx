@@ -20,7 +20,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
     if (path === '/red') {
       return { title: 'Red Eagle', key: 'red' }
     }
-    return { title: 'Finance', key: 'finance' }
+    return { title: 'EPC Main', key: 'finance' }
   }
 
   const currentTab = getSingleTab()
@@ -82,8 +82,8 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', width: '300px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px', width: '100%' }}>
             {/* {!isInitialLoading && ( */}
             <button
               type="button"
@@ -94,6 +94,7 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
                 fontWeight: 'bold',
                 cursor: 'default',
                 background: 'transparent',
+                width: '100%'
               }}
             >
               <motion.div

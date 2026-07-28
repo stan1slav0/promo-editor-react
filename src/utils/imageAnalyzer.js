@@ -50,7 +50,7 @@ export async function generateAltTextsForImages(imgs, toastId) {
 
     if (toastId) {
       toast.update(toastId, {
-        render: `🤖 AI analyzing image ${index} of ${imgs.length}...`,
+        render: `🤖 AI analyzing ${index} of ${imgs.length} image${imgs.length === 1 ? '' : 's'}`,
         type: 'info',
         isLoading: true
       })
@@ -102,10 +102,12 @@ export async function generateAltTextsForImages(imgs, toastId) {
   if (toastId && processedCount > 0) {
     const word = processedCount === 1 ? 'image' : 'images'
     toast.update(toastId, {
-      render: `✅ AI finished! ${processedCount} ${word} processed.`,
+      render: `${processedCount} ${word} ready for upload.`,
       type: 'success',
       isLoading: false,
-      autoClose: 3000
+      autoClose: 5000,
+      closeOnClick: false,
+      closeButton: false
     })
   } else if (toastId) {
     toast.dismiss(toastId)

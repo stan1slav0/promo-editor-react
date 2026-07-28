@@ -156,9 +156,9 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
   let statusType = 'success'
 
   if (uploadedCount > 0 && existsCount === 0) {
-    statusText = `✅ Successfully uploaded ${uploadedCount} ${upWord}!`
+    statusText = `Successfully uploaded ${uploadedCount} ${upWord}!`
   } else if (uploadedCount === 0 && existsCount > 0) {
-    statusText = `⚠️ All ${existsCount} ${exWord} already exist on server.`
+    statusText = `${existsCount} ${exWord} already exist on server.`
     statusType = 'warning'
   } else if (uploadedCount > 0 && existsCount > 0) {
     statusText = `✅ Uploaded: ${uploadedCount} ${upWord} | ⚠️ Exist: ${existsCount} ${exWord}`
@@ -200,8 +200,9 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
         ),
       type: statusType,
       isLoading: false,
-      autoClose: false, // 🔒 Закрывается только пользователем или при правке DOM
-      closeOnClick: false
+      autoClose: false,
+      closeOnClick: false,
+      closeButton: true
     })
   }
 }

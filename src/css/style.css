@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .limit-main {
   display: flex;
   flex-direction: column;
@@ -807,4 +808,70 @@ input[type=number] {
   100% {
     background-position: 0% 50%;
   }
+}
+/* =========================================================
+   Liquid Glass (Glassmorphism) Style for ALL Toasts
+   ========================================================= */
+.Toastify__toast {
+  background: rgba(4, 3, 3, 0.48) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(255, 255, 255, 0.2) inset !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  overflow: hidden;
+}
+
+.Toastify__toast--dark {
+  background: rgba(20, 25, 35, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+/* 3. Кнопка закрытия (крестик) */
+.Toastify__close-button {
+  color: currentColor !important;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+
+/* 4. Полупрозрачные индикаторы времени (прогресс-бары) */
+.Toastify__progress-bar {
+  height: 3px !important;
+  opacity: 0.7;
+}
+
+/* 5. Иконки внутри поп-апов */
+.Toastify__toast-icon {
+  width: 22px !important;
+}
+
+/* Кнопка в стиле Glassmorphism внутри тоста */
+.s3-toast-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(59, 130, 246, 0.25) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: #1d4ed8 !important;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.s3-toast-button:hover {
+  background: rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-1px);
 }/*# sourceMappingURL=style.css.map */

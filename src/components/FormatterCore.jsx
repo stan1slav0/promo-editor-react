@@ -93,8 +93,25 @@ export default function FormatterCore({
 
   const handleCategoryClick = (cat) => {
     const lowerCat = cat.toLowerCase()
+
+    if (lowerCat === activeCategory?.toLowerCase()) return
+
+    dismissS3ToastIfExist()
+
     localStorage.setItem(STORAGE_KEY_CATEGORY, lowerCat)
     onCategoryChange(lowerCat)
+
+    const formattedName = cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()
+    toast.info(
+      <span>
+        Category changed to <strong>{formattedName}</strong>
+      </span>,
+      {
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeButton: false
+      }
+    )
   }
 
   const updateImageCountLog = () => {
@@ -118,9 +135,18 @@ export default function FormatterCore({
 
     if (prevS3EnabledRef.current !== isS3Enabled) {
       if (isS3Enabled) {
-        toast.info('☁️ Auto-upload to S3 mode activated!', { autoClose: 2000 })
+        toast.info('☁️ Auto-upload to S3 mode activated!',
+          {
+            autoClose: 2000,
+            closeButton: false,
+            hideProgressBar: true
+          })
       } else {
-        toast.info('💻 Download to PC mode activated!', { autoClose: 2000 })
+        toast.info('💻 Download to PC mode activated!', {
+          autoClose: 2000,
+          closeButton: false,
+          hideProgressBar: true
+        })
       }
 
       prevS3EnabledRef.current = isS3Enabled
@@ -209,14 +235,21 @@ export default function FormatterCore({
     }, 800)
   }
 
+  const handleFileNameChange = (e) => {
+    dismissS3ToastIfExist() // 🔴 Закрываем поп-ап при изменении названия
+    setFileName(e.target.value)
+  }
+
   const changeNumber = (amount) => {
+    dismissS3ToastIfExist()
+
     const match = fileName.match(/(\D*)(\d+)/)
     if (match) {
       const textPart = match[1]
       const numberPart = (parseInt(match[2], 10) || 0) + amount
       setFileName(textPart + numberPart)
     } else if (!fileName) {
-      setFileName('PROMO1')
+      setFileName('')
     }
   }
 
@@ -425,7 +458,7 @@ export default function FormatterCore({
                 id="fileName"
                 type="text"
                 value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
+                onChange={handleFileNameChange}
                 placeholder=""
                 autoComplete="off"
               />
@@ -440,7 +473,7 @@ export default function FormatterCore({
           </div>
 
           <AnimatePresence initial={false}>
-            {hasImages && (
+            {hasImages && availableCategories && availableCategories.length > 1 && (
               <motion.div
                 key="categories-wrap"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -491,7 +524,7 @@ export default function FormatterCore({
 
               <div className="code-buttons-wrapper">
 
-                {activeCategory?.toLowerCase() === 'finance' && (
+                {['finance', 'health', 'pets'].includes(activeCategory?.toLowerCase()) ? (
                   <button
                     disabled={isAnalyzing}
                     type="button"
@@ -505,7 +538,7 @@ export default function FormatterCore({
                     }}
                   >
                     <span>
-                      {isAnalyzing ? 'Analyzing...' : 'Download ALL'}
+                      {isAnalyzing ? 'Analyzing...' : 'Download'}
                       <svg width="26" height="26" viewBox="0 0 26 26" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path d="M4.94 15.86V22.898C4.9496 23.4582 5.40158 23.9103 5.9614 23.9198L5.9795 23.92H16.2538L20.54 19.6338V15.86H22.1V20.28L16.9 25.48H5.9795C4.55803 25.48 3.4033 24.3391 3.38035 22.923L3.38 22.88V15.86H4.94ZM20.228 18.72L15.548 23.4V18.72H20.228ZM19.5005 0C20.922 0 22.0767 1.14087 22.0997 2.55695L22.1 2.59995V3.38H22.88C24.3159 3.38 25.48 4.54406 25.48 5.98V11.7C25.48 13.1359 24.3159 14.3 22.88 14.3H2.6C1.16406 14.3 0 13.1359 0 11.7V5.98C0 4.54406 1.16406 3.38 2.6 3.38H3.38V2.59995C3.38 1.17876 4.52067 0.0233153 5.93651 0.000348427L5.9795 0H19.5005ZM22.88 4.94H2.6C2.03161 4.94 1.56971 5.39597 1.56 5.96209V11.7C1.56 12.2684 2.01597 12.7303 2.58209 12.7398L2.6 12.74H22.88C23.4484 23.74 23.9103 12.284 23.92 11.7179V5.98C23.92 5.41161 23.464 4.94971 22.8979 4.94015L22.88 4.94ZM19.5005 1.56H5.9616C5.40199 1.56961 4.94971 2.02195 4.94 2.58185V2.59995V3.38H20.54V2.58203C20.5303 2.01582 20.0686 1.56 19.5005 1.56Z" />
                         <path d="M7.7 5.98H9.1L11.05 11.18H9.85L9.4 9.9H7.4L6.95 11.18H5.75L7.7 5.98ZM7.8 8.85H9.00L8.4 7.15L7.8 8.85Z" />
@@ -514,29 +547,30 @@ export default function FormatterCore({
                       </svg>
                     </span>
                   </button>
+                ) : (
+                  /* 2. Кнопка "Download HTML" — отображается ДЛЯ ВСЕХ ОСТАЛЬНЫХ категорий */
+                  <button
+                    disabled={isAnalyzing}
+                    type="button"
+                    id="downloadBtn"
+                    className="main-btn primary-button"
+                    title="Download HTML"
+                    onClick={handleFullDownloadHTML}
+                    style={{
+                      opacity: isAnalyzing ? 0.6 : 1,
+                      cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    <span>
+                      {isAnalyzing ? 'Analyzing...' : 'Download'}
+                      <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.94 15.86V22.898C4.9496 23.4582 5.40158 23.9103 5.9614 23.9198L5.9795 23.92H16.2538L20.54 19.6338V15.86H22.1V20.28L16.9 25.48H5.9795C4.55803 25.48 3.4033 24.3391 3.38035 22.923L3.38 22.88V15.86H4.94ZM20.228 18.72L15.548 23.4V18.72H20.228ZM19.5005 0C20.922 0 22.0767 1.14087 22.0997 2.55695L22.1 2.59995V3.38H22.88C24.3159 3.38 25.48 4.54406 25.48 5.98V11.7C25.48 13.1359 24.3159 14.3 22.88 14.3H2.6C1.16406 14.3 0 13.1359 0 11.7V5.98C0 4.54406 1.16406 3.38 2.6 3.38H3.38V2.59995C3.38 1.17876 4.52067 0.0233153 5.93651 0.000348427L5.9795 0H19.5005ZM22.88 4.94H2.6C2.03161 4.94 1.56971 5.39597 1.56 5.96209V11.7C1.56 12.2684 2.01597 12.7303 2.58209 12.7398L2.6 12.74H22.88C23.4484 23.74 23.9103 12.284 23.92 11.7179V5.98C23.92 5.41161 23.464 4.94971 22.8979 4.94015L22.88 4.94ZM4.1236 5.98V8.0236H6.5806V5.98H7.696V11.1826H6.5806V8.9986H4.1236V11.1826H3.016V5.98H4.1236ZM12.2876 5.98V6.955H10.7744V11.1826H9.659V6.955H8.138V5.98H12.2876ZM14.2896 5.98L15.5532 9.2248L16.8168 5.98H18.3768V11.1826H17.2614V7.4386L15.795 11.1826H15.3114L13.845 7.4386V11.1826H12.7374V5.98H14.2896ZM20.254 5.98V10.2076H22.4536V11.1826H19.1464V5.98H20.254ZM19.5005 1.56H5.9616C5.40199 1.56961 4.94971 2.02195 4.94 2.58185V2.59995V3.38H20.54V2.58203C20.5303 2.01582 20.0686 1.56 19.5005 1.56Z" />
+                      </svg>
+                    </span>
+                  </button>
                 )}
 
-                <button
-                  disabled={isAnalyzing}
-                  type="button"
-                  id="downloadBtn"
-                  className="main-btn primary-button"
-                  title="Download HTML"
-                  onClick={handleFullDownloadHTML}
-                  style={{
-                    opacity: isAnalyzing ? 0.6 : 1,
-                    cursor: isAnalyzing ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  <span>
-                    {isAnalyzing ? 'Analyzing...' : 'Download'}
-                    <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4.94 15.86V22.898C4.9496 23.4582 5.40158 23.9103 5.9614 23.9198L5.9795 23.92H16.2538L20.54 19.6338V15.86H22.1V20.28L16.9 25.48H5.9795C4.55803 25.48 3.4033 24.3391 3.38035 22.923L3.38 22.88V15.86H4.94ZM20.228 18.72L15.548 23.4V18.72H20.228ZM19.5005 0C20.922 0 22.0767 1.14087 22.0997 2.55695L22.1 2.59995V3.38H22.88C24.3159 3.38 25.48 4.54406 25.48 5.98V11.7C25.48 13.1359 24.3159 14.3 22.88 14.3H2.6C1.16406 14.3 0 13.1359 0 11.7V5.98C0 4.54406 1.16406 3.38 2.6 3.38H3.38V2.59995C3.38 1.17876 4.52067 0.0233153 5.93651 0.000348427L5.9795 0H19.5005ZM22.88 4.94H2.6C2.03161 4.94 1.56971 5.39597 1.56 5.96209V11.7C1.56 12.2684 2.01597 12.7303 2.58209 12.7398L2.6 12.74H22.88C23.4484 23.74 23.9103 12.284 23.92 11.7179V5.98C23.92 5.41161 23.464 4.94971 22.8979 4.94015L22.88 4.94ZM4.1236 5.98V8.0236H6.5806V5.98H7.696V11.1826H6.5806V8.9986H4.1236V11.1826H3.016V5.98H4.1236ZM12.2876 5.98V6.955H10.7744V11.1826H9.659V6.955H8.138V5.98H12.2876ZM14.2896 5.98L15.5532 9.2248L16.8168 5.98H18.3768V11.1826H17.2614V7.4386L15.795 11.1826H15.3114L13.845 7.4386V11.1826H12.7374V5.98H14.2896ZM20.254 5.98V10.2076H22.4536V11.1826H19.1464V5.98H20.254ZM19.5005 1.56H5.9616C5.40199 1.56961 4.94971 2.02195 4.94 2.58185V2.59995V3.38H20.54V2.58203C20.5303 2.01582 20.0686 1.56 19.5005 1.56Z" />
-                    </svg>
-                  </span>
-                </button>
-
-                <AnimatePresence initial={false}>
+                {/* <AnimatePresence initial={false}>
                   {supportsMJML && (
                     <motion.button
                       key="mjml-btn"
@@ -566,7 +600,7 @@ export default function FormatterCore({
                       </span>
                     </motion.button>
                   )}
-                </AnimatePresence>
+                </AnimatePresence> */}
 
                 <button
                   type="button"
