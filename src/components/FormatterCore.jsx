@@ -23,8 +23,45 @@ export default function FormatterCore({
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   const editorRef = useRef(null)
+  const htmlOutputRef = useRef(null)
+  const mjmlOutputRef = useRef(null)
+
+  const isSyncingScroll = useRef(false)
   const isFirstRender = useRef(true)
   const supportsMJML = processor?.hasMJML !== false
+
+
+  const handleSyncScroll = (sourceRef) => {
+    if (isSyncingScroll.current || !sourceRef.current) return
+
+    isSyncingScroll.current = true
+
+    const source = sourceRef.current
+    const maxScroll = source.scrollHeight - source.clientHeight
+
+    if (maxScroll <= 0) {
+      isSyncingScroll.current = false
+      return
+    }
+
+    const scrollPercentage = source.scrollTop / maxScroll
+
+    const targets = [editorRef, htmlOutputRef, mjmlOutputRef]
+
+    targets.forEach((targetRef) => {
+      if (targetRef && targetRef.current && targetRef !== sourceRef) {
+        const target = targetRef.current
+        const targetMaxScroll = target.scrollHeight - target.clientHeight
+        if (targetMaxScroll > 0) {
+          target.scrollTop = scrollPercentage * targetMaxScroll
+        }
+      }
+    })
+
+    requestAnimationFrame(() => {
+      isSyncingScroll.current = false
+    })
+  }
 
   useEffect(() => {
     const savedCategory = localStorage.getItem(STORAGE_KEY_CATEGORY)
@@ -394,6 +431,7 @@ export default function FormatterCore({
                   className="field-big__area field-big__area_main primary-text-editor-block"
                   contentEditable="true"
                   onInput={handleEditorInput}
+                  onScroll={() => handleSyncScroll(editorRef)}
                   suppressContentEditableWarning={true}
                 />
               </div>
@@ -493,9 +531,11 @@ export default function FormatterCore({
                     <div className="field-big" style={{ borderRadius: '16px' }}>
                       <div className="field-big__line"></div>
                       <textarea
+                        ref={htmlOutputRef}
                         id="output"
                         className="field-big__area html-code-block"
                         value={htmlOutput}
+                        onScroll={() => handleSyncScroll(htmlOutputRef)}
                         readOnly
                       />
                     </div>
@@ -518,9 +558,11 @@ export default function FormatterCore({
                         <div className="field-big">
                           <div className="field-big__line"></div>
                           <textarea
+                            ref={mjmlOutputRef}
                             id="mjmlOutput"
                             className="field-big__area html-code-block"
                             value={mjmlOutput}
+                            onScroll={() => handleSyncScroll(mjmlOutputRef)}
                             readOnly
                           />
                         </div>

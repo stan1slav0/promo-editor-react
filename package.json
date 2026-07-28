@@ -13,13 +13,16 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@uiw/react-textarea-code-editor": "^3.1.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.42.2",
     "piexifjs": "^1.0.6",
     "prettier": "^3.9.5",
+    "prismjs": "^1.30.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1"
+    "react-router-dom": "^7.18.1",
+    "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
