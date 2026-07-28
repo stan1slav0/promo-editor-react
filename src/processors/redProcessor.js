@@ -517,17 +517,23 @@ class RedProcessor {
   }
 
   wrapContentInFullTableStructure(htmlContent) {
-    return `
+    const fullTableStructure = `
     <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 100%;">
         <tr>
             <td align="center" valign="top">
-                <table class="primary-table-wrapper" bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0"
+                <table class="layout-table-wrapper" bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0"
                        role="presentation" width="100%" style="max-width: 600px;">
                     <tr>
-                        <td class="content-space-main-wrapper" align="center" style="padding-top: 14px; padding-left: 19px; padding-bottom: 14px; padding-right: 19px;">
-                            <table class="content-inner-table" border="0" cellspacing="0" role="presentation"
+                        <td class="layout-content-wrapper" align="center" style="padding-left: 18px; padding-right: 18px;">
+                            <table class="layout-inner-block" border="0" cellspacing="0" role="presentation"
                                    cellpadding="0" width="100%" style="width: 100%;">
+                                <tr>
+                                    <td height="14" width="100%" style="max-width: 100%" class="section-gap"></td>
+                                </tr>                                
                                 ${htmlContent}
+                                <tr>
+                                    <td height="14" width="100%" style="max-width: 100%" class="section-gap"></td>
+                                </tr>
                             </table>
                         </td>
                     </tr>
@@ -535,6 +541,7 @@ class RedProcessor {
             </td>
         </tr>
     </table>`
+    return fullTableStructure
   }
 
   preserveSingleBr(htmlContent) {
