@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useHotkeys } from 'react-hotkeys-hook'
-import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
 import { toast } from 'react-toastify'
 
@@ -31,10 +29,14 @@ export default function FormatterCore({
   const isAnalyzingRef = useRef(false)
   const observerRef = useRef(null)
   const s3ToastIdRef = useRef(null)
+  const altTimeoutRef = useRef(null)
 
   const isSyncingScroll = useRef(false)
   const isFirstRender = useRef(true)
   const supportsMJML = processor?.hasMJML !== false
+
+  const activeCategoryRef = useRef(activeCategory)
+  activeCategoryRef.current = activeCategory
 
   const dismissS3ToastIfExist = () => {
     if (s3ToastIdRef.current) {
@@ -45,7 +47,6 @@ export default function FormatterCore({
 
   const handleSyncScroll = (sourceRef) => {
     if (isSyncingScroll.current || !sourceRef.current) return
-
     isSyncingScroll.current = true
 
     const source = sourceRef.current
@@ -94,24 +95,16 @@ export default function FormatterCore({
 
   const handleCategoryClick = (cat) => {
     const lowerCat = cat.toLowerCase()
-
     if (lowerCat === activeCategory?.toLowerCase()) return
 
     dismissS3ToastIfExist()
-
     localStorage.setItem(STORAGE_KEY_CATEGORY, lowerCat)
     onCategoryChange(lowerCat)
 
     const formattedName = cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()
     toast.info(
-      <span>
-        Category changed to <strong>{formattedName}</strong>
-      </span>,
-      {
-        autoClose: 2000,
-        hideProgressBar: true,
-        closeButton: false
-      }
+      <span>Category changed to <strong>{formattedName}</strong></span>,
+      { autoClose: 2000, hideProgressBar: true, closeButton: false }
     )
   }
 
@@ -136,30 +129,24 @@ export default function FormatterCore({
 
     if (prevS3EnabledRef.current !== isS3Enabled) {
       if (isS3Enabled) {
-        toast.info('☁️ Auto-upload to S3 mode activated!',
-          {
-            autoClose: 2000,
-            closeButton: false,
-            hideProgressBar: true
-          })
+        toast.info('☁️ Auto-upload to S3', {
+          autoClose: 2000, closeButton: false, hideProgressBar: true
+        })
       } else {
-        toast.info('💻 Download to PC mode activated!', {
-          autoClose: 2000,
-          closeButton: false,
-          hideProgressBar: true
+        toast.info('💻 Download to PC', {
+          autoClose: 2000, closeButton: false, hideProgressBar: true
         })
       }
-
       prevS3EnabledRef.current = isS3Enabled
     }
   }, [isS3Enabled])
 
-  const getFormattedName = () => {
-    const raw = fileName.trim() || ''
+  const getFormattedName = (nameToFormat = fileName) => {
+    const raw = nameToFormat.trim() || ''
     return raw.replace(/\s+/g, '').toUpperCase()
   }
 
-  const recalculateOutputs = async () => {
+  const recalculateOutputs = async (overrideFileName = null) => {
     if (!processor) return
 
     const rawHtml = editorRef.current ? editorRef.current.innerHTML : editorContent
@@ -170,7 +157,8 @@ export default function FormatterCore({
       return
     }
 
-    const formattedName = getFormattedName()
+    const currentFileName = overrideFileName !== null ? overrideFileName : fileName
+    const formattedName = getFormattedName(currentFileName)
 
     try {
       const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
@@ -194,31 +182,32 @@ export default function FormatterCore({
   useEffect(() => {
     if (!editorRef.current) return
 
-    const observer = new MutationObserver(() => {
+    const observer = new MutationObserver((mutations) => {
       if (isAnalyzingRef.current || !editorRef.current) return
 
-      dismissS3ToastIfExist()
+      const hasNodeChanges = mutations.some(m => m.type === 'childList')
 
-      const html = editorRef.current.innerHTML
-      setEditorContent(html)
-      updateImageCountLog()
+      if (hasNodeChanges) {
+        updateImageCountLog()
 
-      clearTimeout(window.altTimeout)
-      window.altTimeout = setTimeout(() => {
-        analyzeEditorImages()
-      }, 800)
+        if (altTimeoutRef.current) clearTimeout(altTimeoutRef.current)
+        altTimeoutRef.current = setTimeout(() => {
+          analyzeEditorImages()
+        }, 1000)
+      }
     })
 
     observer.observe(editorRef.current, {
       childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true
+      subtree: true
     })
 
     observerRef.current = observer
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      if (altTimeoutRef.current) clearTimeout(altTimeoutRef.current)
+    }
   }, [])
 
   const handleEditorInput = (e) => {
@@ -230,38 +219,42 @@ export default function FormatterCore({
     setEditorContent(currentHtml)
     updateImageCountLog()
 
-    clearTimeout(window.altTimeout)
-    window.altTimeout = setTimeout(() => {
+    if (altTimeoutRef.current) clearTimeout(altTimeoutRef.current)
+    altTimeoutRef.current = setTimeout(() => {
       analyzeEditorImages()
-    }, 800)
+    }, 1000)
   }
 
   const handleFileNameChange = (e) => {
     dismissS3ToastIfExist()
-    setFileName(e.target.value)
+    const newName = e.target.value
+    setFileName(newName)
+    recalculateOutputs(newName)
   }
 
   const changeNumber = (amount) => {
     dismissS3ToastIfExist()
-
     const match = fileName.match(/(\D*)(\d+)/)
+    let nextName = fileName
+
     if (match) {
       const textPart = match[1]
       const numberPart = (parseInt(match[2], 10) || 0) + amount
-      setFileName(textPart + numberPart)
+      nextName = textPart + numberPart
     } else if (!fileName) {
-      setFileName('')
+      nextName = ''
     }
+
+    setFileName(nextName)
+    recalculateOutputs(nextName)
   }
 
   const handlePaste = () => {
     setTimeout(() => {
       isSyncingScroll.current = true
-
       if (editorRef.current) editorRef.current.scrollTop = 0
       if (htmlOutputRef.current) htmlOutputRef.current.scrollTop = 0
       if (mjmlOutputRef.current) mjmlOutputRef.current.scrollTop = 0
-
       requestAnimationFrame(() => {
         isSyncingScroll.current = false
       })
@@ -270,7 +263,6 @@ export default function FormatterCore({
 
   const handleResetAll = () => {
     dismissS3ToastIfExist()
-
     if (editorRef.current) {
       editorRef.current.innerHTML = ''
     }
@@ -287,45 +279,6 @@ export default function FormatterCore({
     })
   }
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const isMod = e.metaKey || e.ctrlKey
-      if (!isMod) return
-
-      const key = e.key.toLowerCase()
-
-      if (key === 's' && !e.shiftKey) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        if (isAnalyzingRef.current) return
-
-        const isFullPackageCategory = ['finance', 'health', 'pets'].includes(
-          activeCategory?.toLowerCase()
-        )
-
-        if (isFullPackageCategory) {
-          handleDownloadAll()
-        } else {
-          handleFullDownloadHTML()
-        }
-      }
-
-      if (key === 'r' && !e.shiftKey) {
-        e.preventDefault()
-        e.stopPropagation()
-
-        handleResetAll()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown, true)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, true)
-    }
-  }, [activeCategory, fileName, editorContent])
-
   const getRawContent = () => {
     if (editorRef.current && editorRef.current.innerHTML.trim() !== '') {
       return editorRef.current.innerHTML
@@ -334,42 +287,60 @@ export default function FormatterCore({
   }
 
   const generateHTMLCode = async () => {
-    if (!processor) throw new Error('No processor attached')
-    const rawHtml = getRawContent()
-    if (!rawHtml.trim()) throw new Error('Text editor is empty')
+    try {
+      if (!processor) throw new Error('No processor attached')
+      const rawHtml = getRawContent()
+      if (!rawHtml.trim()) throw new Error('Text editor is empty')
 
-    const formattedName = getFormattedName()
-    const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
-    setHtmlOutput(prettyHtml)
-    return { prettyHtml, formattedName }
+      const formattedName = getFormattedName()
+      const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
+      setHtmlOutput(prettyHtml)
+      return { prettyHtml, formattedName }
+    } catch (error) {
+      toast.error(` ${error.message}`, {
+        closeButton: false,
+        closeOnClick: true,
+        autoClose: 2000,
+        hideProgressBar: true,
+        draggable: true
+      })
+      return null
+    }
   }
 
   const generateMJMLCode = async () => {
-    if (!processor || !supportsMJML) return null
-    const rawHtml = getRawContent()
-    if (!rawHtml.trim()) throw new Error('Text editor is empty')
+    try {
+      if (!processor || !supportsMJML) return null
+      const rawHtml = getRawContent()
+      if (!rawHtml.trim()) throw new Error('Text editor is empty')
 
-    const formattedName = getFormattedName()
-    const prettyMjml = await processor.exportMJML(rawHtml, formattedName)
-    setMjmlOutput(prettyMjml)
-    return { prettyMjml, formattedName }
+      const formattedName = getFormattedName()
+      const prettyMjml = await processor.exportMJML(rawHtml, formattedName)
+      setMjmlOutput(prettyMjml)
+      return { prettyMjml, formattedName }
+    } catch (error) {
+      toast.error(` ${error.message}`, {
+        closeButton: true,
+        closeOnClick: true,
+        autoClose: 4000,
+        draggable: true
+      })
+      return null
+    }
   }
 
   const processImages = async () => {
     if (!editorRef.current) return
-
     const imgs = Array.from(editorRef.current.querySelectorAll('img'))
     if (!imgs.length) return
 
     const promoName = getFormattedName()
-
     const formattedCategory = activeCategory
       ? activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1).toLowerCase()
       : 'Finance'
 
     if (isS3Enabled) {
       dismissS3ToastIfExist()
-
       const toastId = toast.loading('🚀 Initializing S3 Upload...')
       s3ToastIdRef.current = toastId
 
@@ -397,7 +368,6 @@ export default function FormatterCore({
         saveAs(blobWithMeta, `${promoName}_img-${index}.jpg`)
         index++
         saved++
-
         await new Promise(r => setTimeout(r, 200))
       }
 
@@ -407,61 +377,44 @@ export default function FormatterCore({
 
   const handleFullDownloadHTML = async () => {
     try {
-      const { prettyHtml, formattedName } = await generateHTMLCode()
+      const htmlResult = await generateHTMLCode()
+      if (!htmlResult) return
+
+      const { prettyHtml, formattedName } = htmlResult
       const blob = new Blob([prettyHtml], { type: 'text/html;charset=utf-8' })
       saveAs(blob, `${formattedName}_html.html`)
-      toast.success(<span>
-        <strong>{formattedName}</strong> downloaded
-      </span>, { autoClose: 3000 })
+      toast.success(<span><strong>{formattedName}</strong> downloaded</span>, { autoClose: 3000 })
 
       await processImages()
     } catch (err) {
       console.error('Error during HTML export:', err)
-      toast.error(`${err.message}`)
-    }
-  }
-
-  const exportMJML = async () => {
-    try {
-      if (!supportsMJML) return
-      const { prettyMjml, formattedName } = await generateMJMLCode()
-      const blob = new Blob([prettyMjml], { type: 'text/html;charset=utf-8' })
-      saveAs(blob, `${formattedName}_mjml.html`)
-      toast.success('📧 MJML file downloaded!', { autoClose: 3000 })
-    } catch (err) {
-      console.error('Error exporting MJML:', err)
-      toast.error(`${err.message}`)
     }
   }
 
   const handleDownloadAll = async () => {
     try {
-      const { prettyHtml, formattedName } = await generateHTMLCode()
+      const htmlResult = await generateHTMLCode()
+      if (!htmlResult) return
+
+      const { prettyHtml, formattedName } = htmlResult
       const htmlBlob = new Blob([prettyHtml], { type: 'text/html;charset=utf-8' })
       saveAs(htmlBlob, `${formattedName}_html.html`)
 
       if (supportsMJML) {
-        const { prettyMjml } = await generateMJMLCode()
-        if (prettyMjml) {
-          const mjmlBlob = new Blob([prettyMjml], { type: 'text/html;charset=utf-8' })
+        const mjmlResult = await generateMJMLCode()
+        if (mjmlResult?.prettyMjml) {
+          const mjmlBlob = new Blob([mjmlResult.prettyMjml], { type: 'text/html;charset=utf-8' })
           saveAs(mjmlBlob, `${formattedName}_mjml.html`)
         }
       }
 
       toast.success(
-        <span>
-          <strong>{formattedName}</strong>
-          <br />
-          HTML & MJML downloaded
-        </span>,
-        {
-          autoClose: 3000
-        }
+        <span><strong>{formattedName}</strong><br />HTML & MJML downloaded</span>,
+        { autoClose: 3000 }
       )
       await processImages()
     } catch (err) {
       console.error('Error downloading all items:', err)
-      toast.error(`${err.message}`)
     }
   }
 
@@ -489,7 +442,6 @@ export default function FormatterCore({
 
     try {
       await generateAltTextsForImages(imgs, aiToastId)
-
       if (editorRef.current) {
         setEditorContent(editorRef.current.innerHTML)
       }
@@ -507,12 +459,53 @@ export default function FormatterCore({
     }
   }
 
+  // ⚡ Refs для горячих клавиш: связывают 1 раза навешанный eventListener со свежими методами
+  const downloadAllRef = useRef(handleDownloadAll)
+  const downloadHTMLRef = useRef(handleFullDownloadHTML)
+  const resetAllRef = useRef(handleResetAll)
+
+  downloadAllRef.current = handleDownloadAll
+  downloadHTMLRef.current = handleFullDownloadHTML
+  resetAllRef.current = handleResetAll
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isMod = e.metaKey || e.ctrlKey
+      if (!isMod) return
+
+      const key = e.key.toLowerCase()
+
+      if (key === 's' && !e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (isAnalyzingRef.current) return
+
+        const currentCategory = activeCategoryRef.current?.toLowerCase()
+        const isFullPackageCategory = ['finance', 'health', 'pets'].includes(currentCategory)
+
+        if (isFullPackageCategory) {
+          downloadAllRef.current()
+        } else {
+          downloadHTMLRef.current()
+        }
+      }
+
+      if (key === 'r' && !e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
+        resetAllRef.current()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [])
+
   return (
     <div className="limit-main">
       <div className="limit">
-
         <div className="main-input-number-block">
-
           <div className="input-name-block">
             <button type="button" className="button-number button-decrement" onClick={() => changeNumber(-1)}>
               <svg viewBox="0 0 15 3" xmlns="http://www.w3.org/2000/svg">
@@ -541,35 +534,23 @@ export default function FormatterCore({
             </button>
           </div>
 
-          <AnimatePresence initial={false}>
-            {hasImages && availableCategories && availableCategories.length > 1 && (
-              <motion.div
-                key="categories-wrap"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="category-wrap _show"
-              >
-                {availableCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    className={`main-btn main-btn_noicon category-wrap__link ${activeCategory === cat.toLowerCase() ? '_active' : ''
-                      }`}
-                    onClick={() => handleCategoryClick(cat)}
-                  >
-                    <span>{cat}</span>
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+          {hasImages && availableCategories && availableCategories.length > 1 && (
+            <div className="category-wrap _show">
+              {availableCategories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`main-btn main-btn_noicon category-wrap__link ${activeCategory === cat.toLowerCase() ? '_active' : ''}`}
+                  onClick={() => handleCategoryClick(cat)}
+                >
+                  <span>{cat}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex-cols flex-cols_cat">
-
           <div className="flex-col">
             <div className="primary-text-editor-wrapper">
               <div className="primary-text-editor-bg field-big" style={{ borderRadius: '16px' }}>
@@ -590,9 +571,7 @@ export default function FormatterCore({
 
           <div className="flex-col">
             <div className="code-blocks-wrapper">
-
               <div className="code-buttons-wrapper">
-
                 {['finance', 'health', 'pets'].includes(activeCategory?.toLowerCase()) ? (
                   <button
                     disabled={isAnalyzing}
@@ -617,7 +596,6 @@ export default function FormatterCore({
                     </span>
                   </button>
                 ) : (
-                  /* 2. Кнопка "Download HTML" — отображается ДЛЯ ВСЕХ ОСТАЛЬНЫХ категорий */
                   <button
                     disabled={isAnalyzing}
                     type="button"
@@ -638,38 +616,6 @@ export default function FormatterCore({
                     </span>
                   </button>
                 )}
-
-                {/* <AnimatePresence initial={false}>
-                  {supportsMJML && (
-                    <motion.button
-                      key="mjml-btn"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: isAnalyzing ? 0.5 : 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      type="button"
-                      id="mjmlDownloadBtn"
-                      className="main-btn primary-button"
-                      title="Download MJML"
-                      onClick={exportMJML}
-                      disabled={isAnalyzing}
-                      style={{
-                        cursor: isAnalyzing ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      <span>
-                        {isAnalyzing ? 'Analyzing...' : 'Download'}
-                        <svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M5.20001 16.12V23.158C5.20961 23.7182 5.66159 24.1703 6.22141 24.1799L6.23951 24.18H16.5138L20.8 19.8938V16.12H22.36V20.54L17.16 25.74H6.23951C4.81804 25.74 3.66331 24.5991 3.64036 23.1831L3.64001 23.1401V16.12H5.20001ZM20.488 18.98L15.808 23.66V18.98H20.488ZM19.7605 0.26001C21.182 0.26001 22.3367 1.40088 22.3597 2.81696L22.36 2.85996V3.64001H23.14C24.5759 3.64001 25.74 4.80407 25.74 6.24001V11.96C25.74 13.3959 24.5759 14.56 23.14 14.56H2.86001C1.42407 14.56 0.26001 13.3959 0.26001 11.96V6.24001C0.26001 4.80407 1.42407 3.64001 2.86001 3.64001H3.64001V2.85996C3.64001 1.43877 4.78068 0.283325 6.19652 0.260358L6.23951 0.26001H19.7605ZM23.14 5.20001H2.86001C2.29162 5.20001 1.82972 5.65598 1.82001 6.2221V11.96C1.82001 12.5284 2.27598 12.9903 2.8421 12.9999L2.86001 13H23.14C23.7084 13 24.1703 12.544 24.18 11.9779V6.24001C24.18 5.67162 23.724 5.20972 23.1579 5.20016L23.14 5.20001ZM19.7605 1.82001H6.22161C5.662 1.82962 5.20972 2.28196 5.20001 2.84186V3.64001H20.8V2.84204C20.7903 2.27583 20.3287 1.82001 19.7605 1.82001Z" />
-                          <path d="M3.09247 6.30912H4.41989L5.82188 9.72957H5.88153L7.28352 6.30912H8.61094V11.4H7.5669V8.08646H7.52465L6.20717 11.3752H5.49624L4.17876 8.07403H4.13651V11.4H3.09247V6.30912Z" />
-                          <path d="M11.5361 6.30912H12.6V9.85883C12.6 10.187 12.5263 10.472 12.3788 10.7139C12.2329 10.9559 12.0299 11.1423 11.7698 11.2732C11.5096 11.4042 11.2071 11.4696 10.8624 11.4696C10.5559 11.4696 10.2775 11.4158 10.0272 11.3081C9.77864 11.1987 9.58143 11.033 9.4356 10.8109C9.28977 10.5872 9.21768 10.3063 9.21934 9.96821H10.2907C10.294 10.1024 10.3214 10.2176 10.3727 10.3137C10.4258 10.4082 10.4979 10.4811 10.589 10.5325C10.6818 10.5822 10.7912 10.6071 10.9171 10.6071C11.0497 10.6071 11.1616 10.5789 11.2527 10.5225C11.3455 10.4645 11.416 10.38 11.464 10.269C11.5121 10.158 11.5361 10.0212 11.5361 9.85883V6.30912Z" />
-                          <path d="M13.4899 6.30912H14.8173L16.2193 9.72957H16.279L17.681 6.30912H19.0084V11.4H17.9644V8.08646H17.9221L16.6046 11.3752H15.8937L14.5762 8.07403H14.534V11.4H13.4899V6.30912Z" />
-                          <path d="M19.8952 11.4V6.30912H20.9716V10.5126H23.1541V11.4H19.8952Z" />
-                        </svg>
-                      </span>
-                    </motion.button>
-                  )}
-                </AnimatePresence> */}
 
                 <button
                   type="button"
@@ -693,18 +639,14 @@ export default function FormatterCore({
                     </svg>
                   </span>
                 </button>
-
               </div>
 
-              <motion.div
-                initial={false}
-                animate={{
-                  gridTemplateRows: supportsMJML ? '1fr 1fr' : '1fr 0fr',
-                  gap: supportsMJML ? '20px' : '0px',
-                }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+              <div
                 style={{
                   display: 'grid',
+                  gridTemplateRows: supportsMJML ? '1fr 1fr' : '1fr 0fr',
+                  gap: supportsMJML ? '20px' : '0px',
+                  transition: 'grid-template-rows 0.25s ease, gap 0.25s ease',
                   flexGrow: 1,
                   minHeight: 0,
                 }}
@@ -727,40 +669,27 @@ export default function FormatterCore({
                 </div>
 
                 <div className="code-block" style={{ minHeight: 0 }}>
-                  <AnimatePresence initial={false}>
-                    {supportsMJML && (
-                      <motion.div
-                        key="mjml-inner"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="code-inner-block"
-                        style={{ height: '100%' }}
-                      >
-                        <h2 className="sm-main-headline">MJML:</h2>
-                        <div className="field-big">
-                          <div className="field-big__line"></div>
-                          <textarea
-                            ref={mjmlOutputRef}
-                            id="mjmlOutput"
-                            className="field-big__area html-code-block"
-                            value={mjmlOutput}
-                            onScroll={() => handleSyncScroll(mjmlOutputRef)}
-                            readOnly
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {supportsMJML && (
+                    <div className="code-inner-block" style={{ height: '100%' }}>
+                      <h2 className="sm-main-headline">MJML:</h2>
+                      <div className="field-big">
+                        <div className="field-big__line"></div>
+                        <textarea
+                          ref={mjmlOutputRef}
+                          id="mjmlOutput"
+                          className="field-big__area html-code-block"
+                          value={mjmlOutput}
+                          onScroll={() => handleSyncScroll(mjmlOutputRef)}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </motion.div>
-
+              </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   )

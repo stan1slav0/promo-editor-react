@@ -4,7 +4,6 @@ import Header from './components/Header'
 import FormatterCore from './components/FormatterCore'
 import { getProcessor } from './processors'
 import BackgroundCanvas from './components/BackgroundCanvas'
-import { ProtectedRoute } from './components/ProtectedRoute'
 
 import { ToastContainer } from 'react-toastify'
 
@@ -15,11 +14,9 @@ const PAGES = [
   { id: 'red', title: 'Red', path: '/red', categories: ['Red'] },
 ]
 
-// 1. Компонент-обертка, который реагирует на изменение URL РАОНШЕ, чем ProtectedRoute
 function MainLayout({ children }) {
   const location = useLocation()
 
-  // Вычисляем нужный класс строго по текущему пути роутера
   const getBgClass = (pathname) => {
     const path = pathname.toLowerCase()
     if (path.includes('/alpha')) return 'bg-alpha'
@@ -30,7 +27,6 @@ function MainLayout({ children }) {
 
   const bgClass = getBgClass(location.pathname)
 
-  // useLayoutEffect гарантирует синхронное обновление в DOM до отрисовки кадра
   useLayoutEffect(() => {
     const wrapper = document.querySelector('.main-wrapper')
     if (wrapper) {
@@ -113,7 +109,6 @@ export default function App() {
 
   return (
     <BrowserRouter basename="/promo-editor-react">
-      {/* MainLayout оборачивает весь контент И Routes */}
       <MainLayout>
         <Header
           isS3Enabled={isS3Enabled}
@@ -135,40 +130,34 @@ export default function App() {
           <Route
             path="/alpha"
             element={
-              <ProtectedRoute>
-                <PageContent
-                  pageConfig={alphaConfig}
-                  activeCategory={activeCategory}
-                  onCategoryChange={handleCategoryChange}
-                  isS3Enabled={isS3Enabled}
-                />
-              </ProtectedRoute>
+              <PageContent
+                pageConfig={alphaConfig}
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+                isS3Enabled={isS3Enabled}
+              />
             }
           />
           <Route
             path="/terra"
             element={
-              <ProtectedRoute>
-                <PageContent
-                  pageConfig={terraConfig}
-                  activeCategory={activeCategory}
-                  onCategoryChange={handleCategoryChange}
-                  isS3Enabled={isS3Enabled}
-                />
-              </ProtectedRoute>
+              <PageContent
+                pageConfig={terraConfig}
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+                isS3Enabled={isS3Enabled}
+              />
             }
           />
           <Route
             path="/red"
             element={
-              <ProtectedRoute>
-                <PageContent
-                  pageConfig={redConfig}
-                  activeCategory={activeCategory}
-                  onCategoryChange={handleCategoryChange}
-                  isS3Enabled={isS3Enabled}
-                />
-              </ProtectedRoute>
+              <PageContent
+                pageConfig={redConfig}
+                activeCategory={activeCategory}
+                onCategoryChange={handleCategoryChange}
+                isS3Enabled={isS3Enabled}
+              />
             }
           />
 

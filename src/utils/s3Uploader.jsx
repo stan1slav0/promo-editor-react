@@ -11,10 +11,23 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
   if (!letters || !digits) {
     if (toastId) {
       toast.update(toastId, {
-        render: 'Invalid folder format',
+        render: '❌ Invalid folder format (e.g. AA10)',
         type: 'error',
         isLoading: false,
         autoClose: 5000
+      })
+    }
+    return
+  }
+
+  const licenseKey = (localStorage.getItem('license_key') || '').trim()
+  if (!licenseKey) {
+    if (toastId) {
+      toast.update(toastId, {
+        render: '❌ Missing License Key S3',
+        type: 'error',
+        isLoading: false,
+        autoClose: 4000
       })
     }
     return
@@ -25,108 +38,93 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
 
   if (toastId) {
     toast.update(toastId, {
-      render: `🚀 S3 Auto-Upload Mode: sending ${totalCount} ${totalWord}...`,
+      render: `⚙️ Preparing ${totalCount} ${totalWord}...`,
       type: 'info',
       isLoading: true
     })
   }
 
-  let index = 1
-  let uploadedCount = 0
-  let existsCount = 0
+  // 1. Определение параметров URL на основе категории
+  let parentParam = 'global'
+  let apiFolder = ''
   let generatedBrowserUrl = ''
+  const currentCat = (categoryText || '').toLowerCase()
 
-  for (const img of imgs) {
+  if (currentCat === 'alpha') {
+    parentParam = 'alpha'
+    const formattedName = `${letters}/lift-${digits}`
+    apiFolder = `promo/${formattedName}`
+    generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/alphaone/promo/${letters}/lift-${digits}/`
+  } else if (currentCat === 'terra') {
+    parentParam = 'organic'
+    const formattedName = `${letters}/creative-${digits}`
+    apiFolder = `creatives/${formattedName}`
+    generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/organic/creatives/${letters}/creative-${digits}/`
+  } else if (currentCat === 'red') {
+    parentParam = 'redeagle'
+    const formattedName = `${letters}/lift-${digits}`
+    apiFolder = `promo/${formattedName}`
+    generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/redeagle/promo/${letters}/lift-${digits}/`
+  } else {
+    parentParam = 'global'
+    const formattedName = `${letters}/lift-${digits}`
+    const originCategoryName = activeCategoryBtn?.textContent
+      ? activeCategoryBtn.textContent.trim().toLowerCase()
+      : (typeof activeCategoryBtn === 'string' ? activeCategoryBtn : 'finance')
+
+    apiFolder = `Promo/${originCategoryName}/${formattedName}`
+    generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/files/Promo/${encodeURIComponent(originCategoryName)}/${letters}/lift-${digits}/`
+  }
+
+  // 2. Подготовка обработанных блобов параллельно
+  const prepareTask = Array.from(imgs).map(async (img, idx) => {
     const src = img.getAttribute('src')
-    if (!src) continue
-
-    if (toastId) {
-      toast.update(toastId, {
-        render: `⚙️ Processing image ${index} of ${totalCount}...`,
-        type: 'info',
-        isLoading: true
-      })
-    }
+    if (!src) return null
 
     const blob = await getBlobFromSrc(src)
-    if (!blob) {
-      index++
-      continue
-    }
+    if (!blob) return null
 
     const { outBlob } = await toJpeg600(blob, '#ffffff')
     const blobWithMeta = await injectMetadata(outBlob, categoryText)
 
-    const fileName = `img-${index}.jpg`
-
-    if (toastId) {
-      toast.update(toastId, {
-        render: `📤 Uploading image ${index} of ${totalCount}...`,
-        type: 'info',
-        isLoading: true
-      })
+    return {
+      fileName: `img-${idx + 1}.jpg`,
+      blobWithMeta
     }
+  })
 
-    let apiPath = ''
-    let parentParam = 'global'
-    const currentCat = (categoryText || '').toLowerCase()
+  const preparedImages = (await Promise.all(prepareTask)).filter(Boolean)
 
-    if (currentCat === 'alpha') {
-      parentParam = 'alpha'
-      const formattedName = `${letters}/lift-${digits}`
-      apiPath = `promo/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/alphaone/promo/${letters}/lift-${digits}/`
-    } else if (currentCat === 'terra') {
-      parentParam = 'organic'
-      const formattedName = `${letters}/creative-${digits}`
-      apiPath = `creatives/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/organic/creatives/${letters}/creative-${digits}/`
-    } else if (currentCat === 'red') {
-      parentParam = 'redeagle'
-      const formattedName = `${letters}/lift-${digits}`
-      apiPath = `promo/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/redeagle/promo/${letters}/lift-${digits}/`
-    } else {
-      parentParam = 'global'
-      const formattedName = `${letters}/lift-${digits}`
-      const originCategoryName = activeCategoryBtn?.textContent
-        ? activeCategoryBtn.textContent.trim().toLowerCase()
-        : (typeof activeCategoryBtn === 'string' ? activeCategoryBtn : 'finance')
+  if (preparedImages.length === 0) {
+    if (toastId) toast.dismiss(toastId)
+    return
+  }
 
-      apiPath = `Promo/${originCategoryName}/${formattedName}/${fileName}`
-      generatedBrowserUrl = `https://s3-browser.epcnetwork.dev/bucket/files/Promo/${encodeURIComponent(originCategoryName)}/${letters}/lift-${digits}/`
-    }
+  if (toastId) {
+    toast.update(toastId, {
+      render: `🚀 Uploading ${preparedImages.length} ${totalWord} to S3...`,
+      type: 'info',
+      isLoading: true
+    })
+  }
 
+  let uploadedCount = 0
+  let existsCount = 0
+
+  // 3. Отправка на сервер S3 параллельно
+  const uploadTask = preparedImages.map(async (item) => {
+    const apiPath = `${apiFolder}/${item.fileName}`
     const originalApiUrl = `https://public.epcnetwork.dev/upload?parent=${parentParam}&path=${apiPath}`
     const apiUrl = `${PROXY_URL}?url=${encodeURIComponent(originalApiUrl)}`
 
     try {
-      let licenseKey = localStorage.getItem('license_key')
-
-      if (!licenseKey || !licenseKey.trim()) {
-        licenseKey = prompt('🔑 Enter License Key S3:')
-        if (licenseKey && licenseKey.trim()) {
-          localStorage.setItem('license_key', licenseKey.trim())
-        } else {
-          if (toastId) {
-            toast.update(toastId, {
-              render: '❌ No License Key provided.',
-              type: 'error',
-              isLoading: false,
-              autoClose: 4000
-            })
-          }
-          return
-        }
-      }
-
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'image/jpeg',
           'Authorization': `License ${licenseKey}`
         },
-        body: blobWithMeta
+        body: item.blobWithMeta
       })
 
       const responseText = await response.text()
@@ -134,21 +132,18 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
       if (!response.ok) {
         if (response.status === 409 || responseText.includes('already exists')) {
           existsCount++
-        } else {
-          throw new Error(`Server error: ${response.status}`)
         }
       } else {
         uploadedCount++
       }
-
     } catch (err) {
-      console.error('S3 Upload error:', err)
+      console.error(`S3 Upload error [${item.fileName}]:`, err)
     }
+  })
 
-    index++
-    await new Promise(r => setTimeout(r, 300))
-  }
+  await Promise.all(uploadTask)
 
+  // 4. Формирование финального статуса
   const upWord = uploadedCount === 1 ? 'image' : 'images'
   const exWord = existsCount === 1 ? 'image' : 'images'
 
@@ -167,7 +162,6 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
     statusType = 'error'
   }
 
-  // Финальный всплывающий тост — НЕ закрывается автоматически
   if (toastId) {
     toast.update(toastId, {
       render: () =>

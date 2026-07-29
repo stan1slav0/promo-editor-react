@@ -7,7 +7,9 @@ export default function BackgroundCanvas() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+    const gl = canvas.getContext('webgl2', { powerPreference: 'low-power' }) ||
+      canvas.getContext('webgl', { powerPreference: 'low-power' })
+
     if (!gl) {
       console.warn('WebGL не поддерживается браузером.')
       return
@@ -20,7 +22,7 @@ export default function BackgroundCanvas() {
         }`
 
     const fs = `#version 300 es
-        precision highp float;
+        precision mediump float;
         uniform float u_time;
         uniform vec2 u_res;
         uniform vec2 u_mouse;
@@ -146,31 +148,44 @@ export default function BackgroundCanvas() {
 
     const mousePos = [0, 0]
 
+    // ⚡ Капим DPR на уровне максимум 1.25 для тотального снижения нагрузки на 4K/Retina
+    const getClampedDPR = () => Math.min(window.devicePixelRatio || 1, 1.25)
+
     const handleMouseMove = (e) => {
-      const dpr = window.devicePixelRatio || 1
+      const dpr = getClampedDPR()
       mousePos[0] = e.clientX * dpr
       mousePos[1] = canvas.height - e.clientY * dpr
     }
 
     const handleResize = () => {
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = window.innerWidth * dpr
-      canvas.height = window.innerHeight * dpr
+      const dpr = getClampedDPR()
+      canvas.width = Math.floor(window.innerWidth * dpr)
+      canvas.height = Math.floor(window.innerHeight * dpr)
       gl.viewport(0, 0, canvas.width, canvas.height)
       gl.uniform2f(resLoc, canvas.width, canvas.height)
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
     window.addEventListener('resize', handleResize)
     handleResize()
 
     let animationFrameId
-    const render = (time) => {
-      time *= 0.0005
+    let lastRenderTime = 0
+    const targetFPS = 35 // ⚡ Ограничиваем фон 35 FPS (для гладкого заднего плана более чем достаточно)
+    const frameInterval = 1000 / targetFPS
+
+    const render = (currentTime) => {
+      animationFrameId = requestAnimationFrame(render)
+
+      const delta = currentTime - lastRenderTime
+      if (delta < frameInterval) return
+
+      lastRenderTime = currentTime - (delta % frameInterval)
+
+      const time = currentTime * 0.0005
       gl.uniform1f(timeLoc, time)
       gl.uniform2f(mouseLoc, mousePos[0], mousePos[1])
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-      animationFrameId = requestAnimationFrame(render)
     }
 
     animationFrameId = requestAnimationFrame(render)
@@ -179,6 +194,12 @@ export default function BackgroundCanvas() {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
       cancelAnimationFrame(animationFrameId)
+
+      // ⚡ Очистка памяти WebGL
+      gl.deleteBuffer(buffer)
+      gl.deleteProgram(program)
+      gl.deleteShader(vShader)
+      gl.deleteShader(fShader)
     }
   }, [])
 

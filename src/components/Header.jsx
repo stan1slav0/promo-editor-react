@@ -1,11 +1,7 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-// import { useVpnRegion } from '../hooks/useVpnRegion'
-
 
 export default function Header({ isS3Enabled, onS3ToggleChange }) {
-  // const { country, isUS, isInitialLoading, isRefreshing, refreshRegion } = useVpnRegion()
   const location = useLocation()
 
   const getSingleTab = () => {
@@ -26,160 +22,61 @@ export default function Header({ isS3Enabled, onS3ToggleChange }) {
   const currentTab = getSingleTab()
 
   return (
-    <>
-      {/* <AnimatePresence>
-        {isInitialLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+    <header
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '15px 30px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', width: '300px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px', width: '100%' }}>
+          <button
+            type="button"
+            className="main-btn main-btn_noicon category-wrap__link _active"
             style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 99999,
-              background: 'rgba(15, 17, 23, 0.85)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '16px',
-              color: '#ffffff',
-              fontFamily: 'sans-serif'
+              position: 'relative',
+              fontSize: '15px',
+              fontWeight: 'bold',
+              cursor: 'default',
+              background: 'transparent',
+              width: '100%'
             }}
           >
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                border: '3px solid rgba(255, 255, 255, 0.1)',
-                borderTop: '3px solid #75eaf6',
-                borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite'
-              }}
-            />
-            <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}</style>
-            <span style={{ fontSize: '15px', fontWeight: 500, letterSpacing: '0.5px' }}>
-              🔍 Checking GeoIP & Security Region...
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence> */}
+            <span style={{ position: 'relative', zIndex: 1 }}>{currentTab.title}</span>
+          </button>
+        </div>
+      </div>
 
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '15px 30px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', width: '300px' }}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', minHeight: '38px', width: '100%' }}>
-            {/* {!isInitialLoading && ( */}
-            <button
-              type="button"
-              className="main-btn main-btn_noicon category-wrap__link _active"
-              style={{
-                position: 'relative',
-                fontSize: '15px',
-                fontWeight: 'bold',
-                cursor: 'default',
-                background: 'transparent',
-                width: '100%'
-              }}
-            >
-              <motion.div
-                layoutId="activeHeaderTab"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  zIndex: 0,
-                  pointerEvents: 'none',
-                }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              />
-              <span style={{ position: 'relative', zIndex: 1 }}>{currentTab.title}</span>
-            </button>
-            {/* )} */}
-          </div>
-          {/* 
-          <div
+      <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', margin: 0 }}>
+          <input
+            type="checkbox"
+            id="s3UploadToggle"
+            checked={isS3Enabled}
+            onChange={(e) => onS3ToggleChange(e.target.checked)}
+            style={{ opacity: 0, width: 0, height: 0 }}
+          />
+          <span className="slider" style={{ border: isS3Enabled ? '1px solid #fff' : '1px solid #ccc' }}></span>
+        </label>
+
+        <div style={{ position: 'relative', overflow: 'hidden', height: '20px', display: 'flex', alignItems: 'center' }}>
+          <span
             style={{
-              fontSize: '12px',
-              color: 'rgba(255, 255, 255, 0.7)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              padding: '4px 10px',
-              borderRadius: '20px'
+              fontSize: '13px',
+              fontWeight: 600,
+              color: isS3Enabled ? '#d357d8' : '#75eaf6',
+              display: 'inline-block',
+              transition: 'color 0.2s ease, opacity 0.2s ease',
             }}
           >
-            <span>
-              IP: <strong>{isInitialLoading ? '...' : country || 'DEF'}</strong> {isUS ? '🇺🇸 (US Region)' : '🇪🇺/🌐 (EU Region)'}
-            </span>
-            <button
-              type="button"
-              onClick={refreshRegion}
-              title="Refresh VPN check"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#fff',
-                padding: 0,
-                lineHeight: 1,
-                opacity: isRefreshing ? 0.4 : 1
-              }}
-            >
-              🔄
-            </button>
-          </div> */}
+            {isS3Enabled ? 'Storage' : 'Desktop'}
+          </span>
         </div>
-
-        <div className="test-toggle-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', margin: 0 }}>
-            <input
-              type="checkbox"
-              id="s3UploadToggle"
-              checked={isS3Enabled}
-              onChange={(e) => onS3ToggleChange(e.target.checked)}
-              style={{ opacity: 0, width: 0, height: 0 }}
-            />
-            <span className="slider" style={{ border: isS3Enabled ? '1px solid #fff' : '1px solid #ccc' }}></span>
-          </label>
-
-          <div style={{ position: 'relative', overflow: 'hidden', height: '20px', display: 'flex', alignItems: 'center' }}>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={isS3Enabled ? 'storage' : 'pc'}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: isS3Enabled ? '#d357d8' : '#75eaf6',
-                  display: 'inline-block',
-                }}
-              >
-                {isS3Enabled ? 'Storage' : 'Desktop'}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-        </div>
-      </header>
-    </>
+      </div>
+    </header>
   )
 }
