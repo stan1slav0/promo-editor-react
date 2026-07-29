@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveAs } from 'file-saver'
 import { toast } from 'react-toastify'
@@ -236,7 +237,7 @@ export default function FormatterCore({
   }
 
   const handleFileNameChange = (e) => {
-    dismissS3ToastIfExist() // 🔴 Закрываем поп-ап при изменении названия
+    dismissS3ToastIfExist()
     setFileName(e.target.value)
   }
 
@@ -266,6 +267,64 @@ export default function FormatterCore({
       })
     }, 10)
   }
+
+  const handleResetAll = () => {
+    dismissS3ToastIfExist()
+
+    if (editorRef.current) {
+      editorRef.current.innerHTML = ''
+    }
+    setEditorContent('')
+    setFileName('')
+    setHtmlOutput('')
+    setMjmlOutput('')
+    setHasImages(false)
+
+    toast.info('All fields cleared', {
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeButton: false,
+    })
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isMod = e.metaKey || e.ctrlKey
+      if (!isMod) return
+
+      const key = e.key.toLowerCase()
+
+      if (key === 's' && !e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (isAnalyzingRef.current) return
+
+        const isFullPackageCategory = ['finance', 'health', 'pets'].includes(
+          activeCategory?.toLowerCase()
+        )
+
+        if (isFullPackageCategory) {
+          handleDownloadAll()
+        } else {
+          handleFullDownloadHTML()
+        }
+      }
+
+      if (key === 'r' && !e.shiftKey) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        handleResetAll()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [activeCategory, fileName, editorContent])
 
   const getRawContent = () => {
     if (editorRef.current && editorRef.current.innerHTML.trim() !== '') {
@@ -358,7 +417,7 @@ export default function FormatterCore({
       await processImages()
     } catch (err) {
       console.error('Error during HTML export:', err)
-      toast.error(`❌ Download HTML Error: ${err.message}`)
+      toast.error(`${err.message}`)
     }
   }
 
@@ -371,7 +430,7 @@ export default function FormatterCore({
       toast.success('📧 MJML file downloaded!', { autoClose: 3000 })
     } catch (err) {
       console.error('Error exporting MJML:', err)
-      toast.error(`❌ MJML Error: ${err.message}`)
+      toast.error(`${err.message}`)
     }
   }
 
