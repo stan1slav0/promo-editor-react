@@ -2,7 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 
-// Подключаем только реальные файлы стилей
+import 'react-toastify/dist/ReactToastify.css'
+
 import './css/style.css'
 import './css/mediaqueries.css'
 

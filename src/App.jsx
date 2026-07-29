@@ -7,7 +7,6 @@ import BackgroundCanvas from './components/BackgroundCanvas'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 
 const PAGES = [
   { id: 'finance', title: 'Finance', path: '/', categories: ['Finance', 'Health', 'Pets'] },
