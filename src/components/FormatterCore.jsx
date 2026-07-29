@@ -137,13 +137,13 @@ export default function FormatterCore({
       if (isS3Enabled) {
         toast.info('☁️ Auto-upload to S3 mode activated!',
           {
-            autoClose: 2000,
+            autoClose: false,
             closeButton: false,
             hideProgressBar: true
           })
       } else {
         toast.info('💻 Download to PC mode activated!', {
-          autoClose: 2000,
+          autoClose: false,
           closeButton: false,
           hideProgressBar: true
         })
