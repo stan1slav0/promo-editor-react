@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver'
 import { toast } from 'react-toastify'
 
 import { uploadImagesToS3 } from '../utils/s3Uploader'
-import { getBlobFromSrc, toJpeg600, injectMetadata } from '../utils/imageProcessor'
+import { getBlobFromSrc, toJpeg600 } from '../utils/imageProcessor'
 import { generateAltTextsForImages } from '../utils/imageAnalyzer'
 
 const STORAGE_KEY_CATEGORY = 'selectedCategory'
@@ -351,28 +351,28 @@ export default function FormatterCore({
         activeCategory,
         toastId
       )
-    } else {
-      let index = 1
-      let saved = 0
-
-      for (const img of imgs) {
-        const src = img.getAttribute('src')
-        if (!src) continue
-
-        const blob = await getBlobFromSrc(src)
-        if (!blob) continue
-
-        const { outBlob } = await toJpeg600(blob, '#ffffff')
-        const blobWithMeta = await injectMetadata(outBlob, formattedCategory)
-
-        saveAs(blobWithMeta, `${promoName}_img-${index}.jpg`)
-        index++
-        saved++
-        await new Promise(r => setTimeout(r, 200))
-      }
-
-      toast.success(`💾 ${saved > 1 ? saved + ' images' : saved + ' image'} saved to PC!`, { autoClose: 3000 })
+      return
     }
+
+    let index = 1
+    let saved = 0
+
+    for (const img of imgs) {
+      const src = img.getAttribute('src')
+      if (!src) continue
+
+      const blob = await getBlobFromSrc(src)
+      if (!blob) continue
+
+      const { outBlob } = await toJpeg600(blob, '#ffffff')
+
+      saveAs(outBlob, `${promoName}_img-${index}.jpg`)
+      index++
+      saved++
+      await new Promise(r => setTimeout(r, 150)) // Небольшая задержка для стабильности скачивания
+    }
+
+    toast.success(`💾 ${saved > 1 ? saved + ' images' : saved + ' image'} saved to PC!`, { autoClose: 3000 })
   }
 
   const handleFullDownloadHTML = async () => {

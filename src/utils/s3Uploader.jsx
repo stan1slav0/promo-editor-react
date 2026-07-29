@@ -1,6 +1,6 @@
 import React from 'react'
 import { toast } from 'react-toastify'
-import { getBlobFromSrc, toJpeg600, injectMetadata } from './imageProcessor'
+import { getBlobFromSrc, toJpeg600 } from './imageProcessor'
 
 const PROXY_URL = "https://small-fire-960e.pingo-mw2.workers.dev/"
 
@@ -85,11 +85,10 @@ export async function uploadImagesToS3(imgs, categoryText, folderName, activeCat
     if (!blob) return null
 
     const { outBlob } = await toJpeg600(blob, '#ffffff')
-    const blobWithMeta = await injectMetadata(outBlob, categoryText)
 
     return {
       fileName: `img-${idx + 1}.jpg`,
-      blobWithMeta
+      blobWithMeta: outBlob
     }
   })
 

@@ -1,5 +1,3 @@
-import piexif from 'piexifjs'
-
 export async function getBlobFromSrc(src) {
   try {
     const res = await fetch(src, { mode: 'cors' })
@@ -34,34 +32,4 @@ export async function toJpeg600(blob, bgColor = '#ffffff', quality = 0.82) {
   const outBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', parsedQuality))
 
   return { outBlob, targetW, targetH }
-}
-
-export async function injectMetadata(blob, category) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onloadend = async () => {
-      try {
-        const base64Data = reader.result
-        const zeroth = {}
-        zeroth[piexif.ImageIFD.ImageDescription] = category
-
-        const exifObj = { "0th": zeroth, "Exif": {}, "GPS": {} }
-        const exifBytes = piexif.dump(exifObj)
-        const newBase64 = piexif.insert(exifBytes, base64Data)
-
-        // ⚡ Быстрая и лаконичная конвертация base64 обратно в Blob
-        const res = await fetch(newBase64)
-        const finalBlob = await res.blob()
-
-        resolve(finalBlob)
-      } catch (err) {
-        console.error('❌ EXIF Injection failed:', err)
-        resolve(blob) // В случае ошибки возвращаем исходный блоб
-      }
-    }
-
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(blob)
-  })
 }
