@@ -1,7 +1,16 @@
 import { toast } from 'react-toastify'
 
 const PROXY_URL = "https://small-fire-960e.pingo-mw2.workers.dev"
-const CONCISE_PROMPT = "Describe this image in 3 to 7 words for an HTML alt tag. Be extremely concise, direct, and omit words like 'image of' or 'picture of'."
+const CONCISE_PROMPT =
+  "TASK: Write a 1-to-5 word HTML alt text for this image.\n\n" +
+  "STRICT RULES:\n" +
+  "1. ONLY output 'Video preview' if there is a CLEAR video play button overlay (a large triangle inside a circle in the center) or YouTube-style video frame.\n" +
+  "2. DO NOT mistake sliders, progress bars, charts, or UI icons for a video player.\n" +
+  "3. IF IT IS A CHART/GAUGE/UI CARD: Describe the visual content (e.g., 'Financial rating dashboard' or 'Bullish rating gauge').\n" +
+  "4. Describe the subject in 2 to 5 words MAX.\n" +
+  "5. NEVER transcribe full quotes/text written on the image.\n" +
+  "6. NEVER start with 'image of' or 'photo of'.\n\n" +
+  "OUTPUT FORMAT: Return ONLY the raw alt text string. No quotes, no markdown."
 
 async function imgToBase64(imgElement) {
   const src = imgElement.getAttribute('src')
