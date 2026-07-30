@@ -35,6 +35,8 @@ export default function FormatterCore({
   const isFirstRender = useRef(true)
   const supportsMJML = processor?.hasMJML !== false
 
+  const fileNameInputRef = useRef(null)
+
   const activeCategoryRef = useRef(activeCategory)
   activeCategoryRef.current = activeCategory
 
@@ -74,6 +76,12 @@ export default function FormatterCore({
       isSyncingScroll.current = false
     })
   }
+
+  useEffect(() => {
+    if (fileNameInputRef.current) {
+      fileNameInputRef.current.focus()
+    }
+  }, [])
 
   useEffect(() => {
     const savedCategory = localStorage.getItem(STORAGE_KEY_CATEGORY)
@@ -271,6 +279,10 @@ export default function FormatterCore({
     setHtmlOutput('')
     setMjmlOutput('')
     setHasImages(false)
+
+    if (fileNameInputRef.current) {
+      fileNameInputRef.current.focus()
+    }
 
     toast.info('All fields cleared', {
       autoClose: 2000,
@@ -516,6 +528,7 @@ export default function FormatterCore({
             <div className="field">
               <div className="field__line"></div>
               <input
+                ref={fileNameInputRef}
                 className="field__area input-name"
                 id="fileName"
                 type="text"
