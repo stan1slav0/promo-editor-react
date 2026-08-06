@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { uploadImagesToS3 } from '../utils/s3Uploader'
 import { getBlobFromSrc, toJpeg600 } from '../utils/imageProcessor'
 import { generateAltTextsForImages } from '../utils/imageAnalyzer'
+import { convertAdvancedDetailed } from "../htmlConverter/advanced/index"
 
 const STORAGE_KEY_CATEGORY = 'selectedCategory'
 
@@ -36,6 +37,37 @@ export default function FormatterCore({
   const supportsMJML = processor?.hasMJML !== false
 
   const fileNameInputRef = useRef(null)
+
+  const [mode, setMode] = useState('basic')
+
+  // Переключаемый объект процессора с единым интерфейсом exportHTML / exportMJML
+  const activeProcessor = mode === 'advanced'
+    ? {
+      exportHTML: async (rawHtml, formattedName) => {
+        const result = convertAdvancedDetailed(rawHtml, formattedName)
+        return typeof result === 'string' ? result : (result?.html || rawHtml)
+      },
+      exportMJML: async (rawHtml, formattedName) => {
+        if (processor && typeof processor.exportMJML === 'function') {
+          return await processor.exportMJML(rawHtml, formattedName)
+        }
+        return ''
+      }
+    }
+    : {
+      exportHTML: async (rawHtml, formattedName) => {
+        if (processor && typeof processor.exportHTML === 'function') {
+          return await processor.exportHTML(rawHtml, formattedName)
+        }
+        return rawHtml
+      },
+      exportMJML: async (rawHtml, formattedName) => {
+        if (processor && typeof processor.exportMJML === 'function') {
+          return await processor.exportMJML(rawHtml, formattedName)
+        }
+        return ''
+      }
+    }
 
   const activeCategoryRef = useRef(activeCategory)
   activeCategoryRef.current = activeCategory
@@ -155,7 +187,7 @@ export default function FormatterCore({
   }
 
   const recalculateOutputs = async (overrideFileName = null) => {
-    if (!processor) return
+    if (!activeProcessor) return
 
     const rawHtml = editorRef.current ? editorRef.current.innerHTML : editorContent
 
@@ -169,11 +201,11 @@ export default function FormatterCore({
     const formattedName = getFormattedName(currentFileName)
 
     try {
-      const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
+      const prettyHtml = await activeProcessor.exportHTML(rawHtml, formattedName)
       setHtmlOutput(prettyHtml)
 
-      if (supportsMJML && processor.exportMJML) {
-        const prettyMjml = await processor.exportMJML(rawHtml, formattedName)
+      if (supportsMJML && activeProcessor.exportMJML) {
+        const prettyMjml = await activeProcessor.exportMJML(rawHtml, formattedName)
         setMjmlOutput(prettyMjml)
       } else {
         setMjmlOutput('')
@@ -185,7 +217,7 @@ export default function FormatterCore({
 
   useEffect(() => {
     recalculateOutputs()
-  }, [editorContent, fileName, activeCategory, processor])
+  }, [editorContent, fileName, activeCategory, mode, processor])
 
   useEffect(() => {
     if (!editorRef.current) return
@@ -300,12 +332,12 @@ export default function FormatterCore({
 
   const generateHTMLCode = async () => {
     try {
-      if (!processor) throw new Error('No processor attached')
+      if (!activeProcessor) throw new Error('No processor attached')
       const rawHtml = getRawContent()
       if (!rawHtml.trim()) throw new Error('Text editor is empty')
 
       const formattedName = getFormattedName()
-      const prettyHtml = await processor.exportHTML(rawHtml, formattedName)
+      const prettyHtml = await activeProcessor.exportHTML(rawHtml, formattedName)
       setHtmlOutput(prettyHtml)
       return { prettyHtml, formattedName }
     } catch (error) {
@@ -322,12 +354,12 @@ export default function FormatterCore({
 
   const generateMJMLCode = async () => {
     try {
-      if (!processor || !supportsMJML) return null
+      if (!activeProcessor || !supportsMJML) return null
       const rawHtml = getRawContent()
       if (!rawHtml.trim()) throw new Error('Text editor is empty')
 
       const formattedName = getFormattedName()
-      const prettyMjml = await processor.exportMJML(rawHtml, formattedName)
+      const prettyMjml = await activeProcessor.exportMJML(rawHtml, formattedName)
       setMjmlOutput(prettyMjml)
       return { prettyMjml, formattedName }
     } catch (error) {
@@ -381,7 +413,7 @@ export default function FormatterCore({
       saveAs(outBlob, `${promoName}_img-${index}.jpg`)
       index++
       saved++
-      await new Promise(r => setTimeout(r, 150)) // Небольшая задержка для стабильности скачивания
+      await new Promise(r => setTimeout(r, 150))
     }
 
     toast.success(`💾 ${saved > 1 ? saved + ' images' : saved + ' image'} saved to PC!`, { autoClose: 3000 })
@@ -471,7 +503,6 @@ export default function FormatterCore({
     }
   }
 
-  // ⚡ Refs для горячих клавиш: связывают 1 раза навешанный eventListener со свежими методами
   const downloadAllRef = useRef(handleDownloadAll)
   const downloadHTMLRef = useRef(handleFullDownloadHTML)
   const resetAllRef = useRef(handleResetAll)
@@ -545,6 +576,31 @@ export default function FormatterCore({
                 <path d="M0 7.5C0 6.67157 0.671573 6 1.5 6H13.5C14.3284 6 15 6.67157 15 7.5C15 8.32843 14.3284 9 13.5 9H1.5C0.671573 9 0 8.32843 0 7.5Z" />
                 <path d="M7.5 15C6.67157 15 6 14.3284 6 13.5L6 1.5C6 0.671573 6.67157 0 7.5 0V0C8.32843 0 9 0.671573 9 1.5V13.5C9 14.3284 8.32843 15 7.5 15V15Z" />
               </svg>
+            </button>
+          </div>
+
+          {/* Переключатель режимов конвертации Basic / Advanced */}
+          <div className="category-wrap _show" style={{ marginRight: '8px' }}>
+            <button
+              type="button"
+              className={`main-btn main-btn_noicon category-wrap__link ${mode === 'basic' ? '_active' : ''}`}
+              onClick={() => {
+                setMode('basic')
+                toast.info('Режим: Basic', { autoClose: 1500, hideProgressBar: true })
+              }}
+            >
+              <span>Basic</span>
+            </button>
+
+            <button
+              type="button"
+              className={`main-btn main-btn_noicon category-wrap__link ${mode === 'advanced' ? '_active' : ''}`}
+              onClick={() => {
+                setMode('advanced')
+                toast.info('Режим: Advanced', { autoClose: 1500, hideProgressBar: true })
+              }}
+            >
+              <span>Advanced</span>
             </button>
           </div>
 

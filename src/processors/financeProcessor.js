@@ -25,7 +25,6 @@ export class FinanceProcessor {
     ]
   }
 
-  // --- Вспомогательный генератор ссылок на изображения ---
   generateDynamicImgSrc(index, promoName, category = 'finance') {
     const rawName = promoName ? promoName.trim() : 'PROMO'
     const cleanPromoName = rawName.replace(/\s+/g, '').toLowerCase()
@@ -46,7 +45,6 @@ export class FinanceProcessor {
     }
   }
 
-  // --- Форматирование Prettier ---
   async formatWithPrettier(htmlString) {
     try {
       let formatted = await prettier.format(htmlString, {
@@ -84,7 +82,6 @@ export class FinanceProcessor {
     }
   }
 
-  // --- Трансформации ссылок и текста ---
   italicLinks(htmlContent) {
     htmlContent = htmlContent.replace(/<a[^>]*>/gi, '').replace(/<\/a>/gi, '')
     this.blueColors.forEach((color) => {
@@ -169,7 +166,6 @@ export class FinanceProcessor {
     return htmlContent
   }
 
-  // --- HTML блоки ---
   wrapSmallCenterTextHtml(htmlContent) {
     return htmlContent.replace(/<h6[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h6>/gi, function (match, content) {
       return `
@@ -465,7 +461,6 @@ export class FinanceProcessor {
     return htmlContent
   }
 
-  // --- MJML блоки ---
   wrapSmallCenterTextMjml(htmlContent) {
     return htmlContent.replace(/<h6[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/h6>/gi, function (match, content) {
       return `
@@ -766,7 +761,6 @@ export class FinanceProcessor {
     })
   }
 
-  // --- Очистка и списки ---
   addBrAfterClosingP(htmlContent) {
     htmlContent = htmlContent.replace(/<br\s*\/?>/gi, '')
     htmlContent = htmlContent.replace(/<\/p>(?!\s*<\/li>)/gi, '</p>\n<br><br>\n')
@@ -967,10 +961,6 @@ export class FinanceProcessor {
         <!--[if mso | IE]></td></tr></table><![endif]-->
     </div>`
   }
-
-  // =========================================================
-  //   ГЛАВНЫЕ МЕТОДЫ ГЕНЕРАЦИИ (Вызываются из React)
-  // =========================================================
 
   async exportHTML(rawEditorContent, promoName) {
     let editorContent = rawEditorContent || ''
