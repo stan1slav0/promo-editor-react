@@ -3,17 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://stan1slav0.github.io/promo-editor-react-advanced",
+  "homepage": "https://stan1slav0.github.io/promo-editor-react",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:advanced": "npm run build",
+    "build:advanced": "VITE_BASE_PATH=/promo-editor-react-advanced/ vite build",
     "lint": "oxlint src",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -r https://github.com/stan1slav0/promo-editor-react-advanced.git",
-    "deploy:advanced": "npm run deploy"
+    "deploy": "gh-pages -d dist",
+    "deploy:advanced": "npm run build:advanced && gh-pages -d dist -r https://github.com/stan1slav0/promo-editor-react-advanced.git"
   },
   "dependencies": {
     "dompurify": "^3.4.13",
