@@ -2,6 +2,9 @@ import financeProcessor from './financeProcessor'
 import alphaProcessor from './alphaProcessor'
 import organicProcessor from './organicProcessor'
 import redProcessor from './redProcessor'
+import advancedProcessor from './advancedProcessor'
+
+export { advancedProcessor }
 
 export function getProcessor(category) {
   switch (category?.toLowerCase()) {

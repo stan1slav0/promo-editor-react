@@ -1,80 +1,167 @@
-// Pre-processing pass applied to raw HTML before the DOM-based pipeline.
-// Imports utility functions from the shared htmlUtils / constants layer.
-
 import { SYMBOLS } from "../constants";
 import {
   escapeRegExp,
   replaceAllEmojisAndSymbolsExcludingHTML,
 } from "../utils/htmlUtils";
+import { WARN } from "./core";
 import type { WarnFn } from "./ir/types";
-import { WARN } from "./warnings";
-
-/**
- * § symbol (with any adjacent <br> elements absorbed) → a single <br>, tagged
- * data-one-br so fromDom.ts can tell an explicit user marker apart from a plain
- * GDocs-typed <br> — needed to detect § placed at the very end of a <p> (right
- * before </p>), which would otherwise be silently dropped as a trailing empty line.
- * No trailing "\n" in the replacement (unlike historical "<br>\n"): DOMParser turns
- * a bare newline after the tag into its own text node, and fromDom's collectRuns
- * treats a lone "\n" text node as an (unmarked) line break too — which used to
- * clobber the very data-one-br distinction this function exists to preserve.
- */
-export function resolveOneBrSymbol(html: string, symbol: string = SYMBOLS.ONE_BR): string {
+export function resolveOneBrSymbol(
+  html: string,
+  symbol: string = SYMBOLS.ONE_BR,
+): string {
   const oneBrRe = new RegExp(
     `(?:<br\\s*/?>\\s*)*${escapeRegExp(symbol || SYMBOLS.ONE_BR)}(?:\\s*<br\\s*/?>)*`,
     "gi",
   );
   return html.replace(oneBrRe, '<br data-one-br="1">');
 }
-
-/** Remove zero-width chars and encode emoji/symbols as HTML entities */
 export const normalizeSymbols = replaceAllEmojisAndSymbolsExcludingHTML;
-
-const SIDE_IMAGE_MARKERS = [
-  { open: "i-r-s", close: "i-r-s-e", side: "right" },
-  { open: "i-l-s", close: "i-l-s-e", side: "left" },
-] as const;
-
-/**
- * `i-r-s`…`i-r-s-e` / `i-l-s`…`i-l-s-e` (see markers.ts) are inserted by
- * EditorSelectionToolbar's wrapSelectionWithMarkers as bare, attribute-less
- * `<div>i-r-s</div>` / `<div>i-r-s-e</div>` elements straddling the selected
- * blocks. ir/fromDom.ts's DIV recursion only visits ELEMENT_NODE children, so a
- * div whose sole child is a raw text node is silently dropped — the marker pair
- * must be rewritten here, before fromDom ever sees it, into a real wrapper div
- * fromDom.ts knows how to recognize (`data-side-image`).
- *
- * Matching the COMPLETE marker `<div>` tags (not just the inner text, unlike the
- * Simple converter's `/i-r-s([\s\S]*?)i-r-s-e/gi` on flattened strings) is
- * required so the replacement nests the wrapped content as a real child of the
- * new wrapper div — open/close markers are separate sibling elements, not
- * overlapping tags, so matching bare text would leave dangling stray
- * `<div>`/`</div>` fragments instead of well-formed nesting.
- */
-export function resolveSideImageMarkers(html: string, warn?: WarnFn): string {
-  for (const { open, close, side } of SIDE_IMAGE_MARKERS) {
-    const pairRe = new RegExp(
-      `<div>\\s*${escapeRegExp(open)}\\s*</div>([\\s\\S]*?)<div>\\s*${escapeRegExp(close)}\\s*</div>`,
-      "gi",
-    );
-    html = html.replace(pairRe, (_match, inner: string) => `<div data-side-image="${side}">${inner}</div>`);
-  }
-  // A lone open or close marker (no partner found by the pairing above) would
-  // otherwise vanish with no trace once fromDom drops its bare text — surface it
-  // instead of leaving the author wondering where their wrapped text went.
-  const leftoverRe = /<div>\s*i-[rl]-s(?:-e)?\s*<\/div>/gi;
-  if (leftoverRe.test(html)) {
-    warn?.(WARN.sideImageMarkerUnclosed);
-    html = html.replace(leftoverRe, "");
-  }
-  return html;
+interface MarkerSpec {
+  open: string;
+  close: string;
+  attribute: string;
+  value: string;
+  warning: string;
 }
-
-export function preprocess(html: string, oneBrSymbol?: string, warn?: WarnFn): string {
+const SIDE_IMAGE_MARKERS: MarkerSpec[] = [
+  {
+    open: "i-r-s",
+    close: "i-r-s-e",
+    attribute: "data-side-image",
+    value: "right",
+    warning: WARN.sideImageMarkerUnclosed,
+  },
+  {
+    open: "i-l-s",
+    close: "i-l-s-e",
+    attribute: "data-side-image",
+    value: "left",
+    warning: WARN.sideImageMarkerUnclosed,
+  },
+];
+const CONTENT_MARKERS: MarkerSpec[] = [
+  {
+    open: "ftr-s",
+    close: "ftr-e",
+    attribute: "data-advanced-footer",
+    value: "left",
+    warning: WARN.footerMarkerUnclosed,
+  },
+  {
+    open: "ftr-c",
+    close: "ftr-c-e",
+    attribute: "data-advanced-footer",
+    value: "center",
+    warning: WARN.footerMarkerUnclosed,
+  },
+  {
+    open: "sign-i",
+    close: "sign-i-e",
+    attribute: "data-advanced-signature",
+    value: "1",
+    warning: WARN.signatureMarkerUnclosed,
+  },
+];
+function normalizedMarkerText(value: string | null): string {
+  return (value ?? "").trim().toLowerCase();
+}
+function collectMarkerAnchors(
+  body: HTMLElement,
+  tokens: Set<string>,
+): Map<string, Element[]> {
+  const anchors = new Map<string, Element[]>();
+  const seen = new Set<Element>();
+  const walker = body.ownerDocument.createTreeWalker(body, 4);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const token = normalizedMarkerText(node.textContent);
+    if (!tokens.has(token)) continue;
+    let host = (node as Text).parentElement;
+    if (!host || normalizedMarkerText(host.textContent) !== token) continue;
+    while (
+      host.parentElement &&
+      host.parentElement !== body &&
+      normalizedMarkerText(host.parentElement.textContent) === token
+    ) {
+      host = host.parentElement;
+    }
+    if (seen.has(host)) continue;
+    seen.add(host);
+    const list = anchors.get(token) ?? [];
+    list.push(host);
+    anchors.set(token, list);
+  }
+  return anchors;
+}
+function isBefore(first: Element, second: Element): boolean {
+  return Boolean(first.compareDocumentPosition(second) & 4);
+}
+function wrapMarkerPair(open: Element, close: Element, spec: MarkerSpec): void {
+  const document = open.ownerDocument;
+  const range = document.createRange();
+  range.setStartAfter(open);
+  range.setEndBefore(close);
+  const content = range.extractContents();
+  const wrapper = document.createElement("div");
+  wrapper.setAttribute(spec.attribute, spec.value);
+  wrapper.append(content);
+  range.insertNode(wrapper);
+  open.remove();
+  close.remove();
+}
+function resolveMarkers(
+  html: string,
+  specs: MarkerSpec[],
+  warn?: WarnFn,
+): string {
+  const document = new DOMParser().parseFromString(
+    `<body>${html}</body>`,
+    "text/html",
+  );
+  const body = document.body;
+  const tokens = new Set(specs.flatMap(({ open, close }) => [open, close]));
+  for (;;) {
+    const anchors = collectMarkerAnchors(body, tokens);
+    let matched = false;
+    for (const spec of specs) {
+      const open = anchors.get(spec.open)?.[0];
+      const close = (anchors.get(spec.close) ?? []).find(
+        (candidate) => open && isBefore(open, candidate),
+      );
+      if (!open || !close) continue;
+      wrapMarkerPair(open, close, spec);
+      matched = true;
+      break;
+    }
+    if (!matched) break;
+  }
+  const leftovers = collectMarkerAnchors(body, tokens);
+  for (const spec of specs) {
+    const unmatched = [
+      ...(leftovers.get(spec.open) ?? []),
+      ...(leftovers.get(spec.close) ?? []),
+    ];
+    if (unmatched.length === 0) continue;
+    warn?.(spec.warning);
+    new Set(unmatched).forEach((element) => element.remove());
+  }
+  return body.innerHTML;
+}
+export function resolveSideImageMarkers(html: string, warn?: WarnFn): string {
+  return resolveMarkers(html, SIDE_IMAGE_MARKERS, warn);
+}
+export function resolveAdvancedMarkers(html: string, warn?: WarnFn): string {
+  return resolveMarkers(
+    html,
+    [...SIDE_IMAGE_MARKERS, ...CONTENT_MARKERS],
+    warn,
+  );
+}
+export function preprocess(
+  html: string,
+  oneBrSymbol?: string,
+  warn?: WarnFn,
+): string {
   html = resolveOneBrSymbol(html, oneBrSymbol);
-  html = resolveSideImageMarkers(html, warn);
-  // normalizeSymbols is intentionally NOT called here — DOMParser in normalize()
-  // decodes HTML entities back to raw characters, undoing the encoding.
-  // It is applied after renderAll in index.ts instead.
+  html = resolveAdvancedMarkers(html, warn);
   return html;
 }

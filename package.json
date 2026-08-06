@@ -7,12 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "build:advanced": "VITE_BASE_PATH=/promo-editor-react-advanced/ vite build",
+    "lint": "oxlint src",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "deploy:advanced": "npm run build:advanced && gh-pages -d dist -r https://github.com/stan1slav0/promo-editor-react-advanced.git"
   },
   "dependencies": {
+    "dompurify": "^3.4.13",
     "file-saver": "^2.0.5",
     "prettier": "^3.9.5",
     "react": "^19.2.7",
@@ -26,6 +30,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "gh-pages": "^6.3.0",
     "oxlint": "^1.71.0",
+    "typescript": "^5.9.3",
     "vite": "^8.1.1"
   }
 }

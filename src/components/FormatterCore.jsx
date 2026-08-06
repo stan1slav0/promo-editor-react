@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { uploadImagesToS3 } from '../utils/s3Uploader'
 import { getBlobFromSrc, toJpeg600 } from '../utils/imageProcessor'
 import { generateAltTextsForImages } from '../utils/imageAnalyzer'
-import { convertAdvancedDetailed } from "../htmlConverter/advanced/index"
+import { advancedProcessor } from '../processors'
 
 const STORAGE_KEY_CATEGORY = 'selectedCategory'
 
@@ -34,40 +34,12 @@ export default function FormatterCore({
 
   const isSyncingScroll = useRef(false)
   const isFirstRender = useRef(true)
-  const supportsMJML = processor?.hasMJML !== false
 
   const fileNameInputRef = useRef(null)
 
   const [mode, setMode] = useState('basic')
-
-  // Переключаемый объект процессора с единым интерфейсом exportHTML / exportMJML
-  const activeProcessor = mode === 'advanced'
-    ? {
-      exportHTML: async (rawHtml, formattedName) => {
-        const result = convertAdvancedDetailed(rawHtml, formattedName)
-        return typeof result === 'string' ? result : (result?.html || rawHtml)
-      },
-      exportMJML: async (rawHtml, formattedName) => {
-        if (processor && typeof processor.exportMJML === 'function') {
-          return await processor.exportMJML(rawHtml, formattedName)
-        }
-        return ''
-      }
-    }
-    : {
-      exportHTML: async (rawHtml, formattedName) => {
-        if (processor && typeof processor.exportHTML === 'function') {
-          return await processor.exportHTML(rawHtml, formattedName)
-        }
-        return rawHtml
-      },
-      exportMJML: async (rawHtml, formattedName) => {
-        if (processor && typeof processor.exportMJML === 'function') {
-          return await processor.exportMJML(rawHtml, formattedName)
-        }
-        return ''
-      }
-    }
+  const activeProcessor = mode === 'advanced' ? advancedProcessor : processor
+  const supportsMJML = activeProcessor?.hasMJML !== false
 
   const activeCategoryRef = useRef(activeCategory)
   activeCategoryRef.current = activeCategory
@@ -128,10 +100,14 @@ export default function FormatterCore({
     if (activeCategory) {
       localStorage.setItem(STORAGE_KEY_CATEGORY, activeCategory.toLowerCase())
     }
-    if (processor) {
-      processor.categoryName = activeCategory
+    if (activeProcessor) {
+      if (typeof activeProcessor.setCategory === 'function') {
+        activeProcessor.setCategory(activeCategory)
+      } else {
+        activeProcessor.categoryName = activeCategory
+      }
     }
-  }, [activeCategory, processor])
+  }, [activeCategory, activeProcessor])
 
   const handleCategoryClick = (cat) => {
     const lowerCat = cat.toLowerCase()
@@ -217,7 +193,7 @@ export default function FormatterCore({
 
   useEffect(() => {
     recalculateOutputs()
-  }, [editorContent, fileName, activeCategory, mode, processor])
+  }, [editorContent, fileName, activeCategory, activeProcessor])
 
   useEffect(() => {
     if (!editorRef.current) return
@@ -453,7 +429,11 @@ export default function FormatterCore({
       }
 
       toast.success(
-        <span><strong>{formattedName}</strong><br />HTML & MJML downloaded</span>,
+        <span>
+          <strong>{formattedName}</strong>
+          <br />
+          {supportsMJML ? 'HTML & MJML downloaded' : 'HTML downloaded'}
+        </span>,
         { autoClose: 3000 }
       )
       await processImages()
@@ -586,7 +566,7 @@ export default function FormatterCore({
               className={`main-btn main-btn_noicon category-wrap__link ${mode === 'basic' ? '_active' : ''}`}
               onClick={() => {
                 setMode('basic')
-                toast.info('Режим: Basic', { autoClose: 1500, hideProgressBar: true })
+                toast.info('Basic Mode', { autoClose: 1500, hideProgressBar: true })
               }}
             >
               <span>Basic</span>
@@ -597,10 +577,10 @@ export default function FormatterCore({
               className={`main-btn main-btn_noicon category-wrap__link ${mode === 'advanced' ? '_active' : ''}`}
               onClick={() => {
                 setMode('advanced')
-                toast.info('Режим: Advanced', { autoClose: 1500, hideProgressBar: true })
+                toast.info('Custom Mode', { autoClose: 1500, hideProgressBar: true })
               }}
             >
-              <span>Advanced</span>
+              <span>Custom</span>
             </button>
           </div>
 
@@ -649,7 +629,7 @@ export default function FormatterCore({
                     type="button"
                     id="downloadAllBtn"
                     className="main-btn primary-button"
-                    title="Download HTML, MJML & Images"
+                    title={supportsMJML ? 'Download HTML, MJML & Images' : 'Download HTML & Images'}
                     onClick={handleDownloadAll}
                     style={{
                       opacity: isAnalyzing ? 0.6 : 1,

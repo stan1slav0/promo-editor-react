@@ -1,7 +1,8 @@
-/**
- * HTML to Table Converter module
- * Exports all conversion utilities and components
- */
-
-export { formatHtml, formatMjml } from "./formatter";
-export { default as HtmlConverterPanel } from "./HtmlConverterPanel";
+export { convertAdvanced, convertAdvancedDetailed } from "./advanced/index";
+export {
+  addBrAfterClosingP,
+  addOneBr,
+  isSignatureImageTag,
+  mergeSimilarTags,
+  removeStylesFromLists,
+} from "./basicCleanup";

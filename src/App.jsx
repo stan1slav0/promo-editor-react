@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import FormatterCore from './components/FormatterCore'
@@ -46,20 +46,24 @@ function MainLayout({ children }) {
 
 function PageContent({ pageConfig, activeCategory, onCategoryChange, isS3Enabled }) {
   const location = useLocation()
+  const categories = pageConfig.categories.map((category) => category.toLowerCase())
+  const defaultCategory = categories[0]
+  const effectiveCategory = categories.includes(activeCategory?.toLowerCase())
+    ? activeCategory.toLowerCase()
+    : defaultCategory
 
   useEffect(() => {
-    if (pageConfig && pageConfig.categories.length > 0) {
-      const defaultCategory = pageConfig.categories[0].toLowerCase()
+    if (defaultCategory) {
       onCategoryChange(defaultCategory)
     }
-  }, [location.pathname, pageConfig])
+  }, [location.pathname, defaultCategory, onCategoryChange])
 
-  const currentProcessor = getProcessor(activeCategory)
+  const currentProcessor = getProcessor(effectiveCategory)
 
   return (
     <FormatterCore
       processor={currentProcessor}
-      activeCategory={activeCategory}
+      activeCategory={effectiveCategory}
       onCategoryChange={onCategoryChange}
       availableCategories={pageConfig.categories}
       isS3Enabled={isS3Enabled}
@@ -90,12 +94,12 @@ export default function App() {
     return localStorage.getItem('s3_test_toggle_enabled') === 'true'
   })
 
-  const handleCategoryChange = (newCategory) => {
+  const handleCategoryChange = useCallback((newCategory) => {
     if (!newCategory) return
     const lower = newCategory.toLowerCase()
     setActiveCategory(lower)
     localStorage.setItem('selectedCategory', lower)
-  }
+  }, [])
 
   const handleS3ToggleChange = (checked) => {
     setIsS3Enabled(checked)
@@ -108,7 +112,7 @@ export default function App() {
   const redConfig = PAGES.find((p) => p.id === 'red')
 
   return (
-    <BrowserRouter basename="/promo-editor-react">
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <MainLayout>
         <Header
           isS3Enabled={isS3Enabled}

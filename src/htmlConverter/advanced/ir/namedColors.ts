@@ -1,7 +1,3 @@
-// CSS Color Module Level 4 extended color keywords (§6.1) — GDocs and other
-// sources occasionally emit these instead of hex/rgb() for borders/text/bg.
-// "transparent" is handled separately by callers (canonicalizeBg/canonicalizeText/parseHex).
-
 export const NAMED_COLORS: Record<string, string> = {
   aliceblue: "#f0f8ff",
   antiquewhite: "#faebd7",
@@ -152,7 +148,6 @@ export const NAMED_COLORS: Record<string, string> = {
   yellow: "#ffff00",
   yellowgreen: "#9acd32",
 };
-
 export function resolveNamedColor(word: string): string | undefined {
   return NAMED_COLORS[word.trim().toLowerCase()];
 }
