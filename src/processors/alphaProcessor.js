@@ -560,11 +560,13 @@ class AlphaProcessor {
     editorContent = this.wrapSignatureImg(editorContent)
     editorContent = this.wrapFooterBlock(editorContent)
     editorContent = this.wrapFooterCenterBlock(editorContent)
-    editorContent = this.cleanEmptyHtmlTags(editorContent)
-    editorContent = this.wrapContentInFullTableStructure(editorContent)
+
 
     editorContent = this.addOneBr(editorContent)
     editorContent = this.replaceTripleBrWithSingle(editorContent)
+
+    editorContent = this.cleanEmptyHtmlTags(editorContent)
+    editorContent = this.wrapContentInFullTableStructure(editorContent)
 
     return await this.formatWithPrettier(editorContent)
   }
