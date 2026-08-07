@@ -252,31 +252,22 @@ input[type=number] {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .015)),
+    rgba(0, 0, 0, 0%);
+  box-shadow: var(--modern-highlight), 0 16px 36px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(20px);
+  transition: all .2s ease;
 
-  &:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 16px;
-    height: 100%;
-    border: 3px solid $neon-blue;
-    border-right: none;
-    border-radius: 16px 0 0 16px;
-    z-index: 1;
+  &:hover {
+    transition: all .2s ease;
   }
 
-  &:after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 16px;
-    height: 100%;
-    border: 3px solid $neon-pink;
-    border-left: none;
-    border-radius: 0 16px 16px 0;
-    z-index: 1;
+  &:focus-within {
+    box-shadow: 0 0 0 3px rgba(var(--field-accent), .08), var(--modern-highlight), 0 18px 40px rgba(0, 0, 0, .16);
   }
 
   &__line {
